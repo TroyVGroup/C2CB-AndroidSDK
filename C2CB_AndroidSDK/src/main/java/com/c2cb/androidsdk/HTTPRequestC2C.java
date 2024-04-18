@@ -97,8 +97,6 @@ public class HTTPRequestC2C extends AsyncTask<String, Void, String>{
         }
 
         int responseCode = con.getResponseCode();
-        System.out.println("\nSending 'GET' request to URL : " + requestURL);
-        System.out.println("Response Code : " + responseCode);
         res_code=responseCode;
         BufferedReader in = new BufferedReader(
                 new InputStreamReader(con.getInputStream()));
@@ -110,8 +108,6 @@ public class HTTPRequestC2C extends AsyncTask<String, Void, String>{
         }
         in.close();
 
-        //print result
-        System.out.println(response.toString());
         return response.toString();
     }
 

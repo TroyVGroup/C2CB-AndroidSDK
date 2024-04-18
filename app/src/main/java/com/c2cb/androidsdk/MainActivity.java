@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
 
     ImageView call_icon, msg_icon, email_icon;
     int ALL_PERMISSIONS = 101;
-    String channelId = "661f96f594db1d708f9e4e2";
+    String channelId = "";
     Modes modes = new Modes();
     C2CVoiceActivity c2cVoiceActivity;
 
