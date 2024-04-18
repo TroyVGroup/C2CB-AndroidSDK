@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#f5f5f5">
+
+    <Chronometer
+        android:id="@+id/chronometer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="20dp"
+        android:importantForAccessibility="no"
+        android:textColor="#b0bec5"
+        android:textSize="60sp" />
+
+    <LinearLayout
+        android:id="@+id/call_icon_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/chronometer"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal"
+        android:weightSum="4">
+
+        <ImageView
+            android:id="@+id/hold_action_fab"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_pause"
+            app:backgroundTint="#FF03DAC5" />
+
+        <ImageView
+            android:id="@+id/hangup_action_fab"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_call_disconnect"
+            app:backgroundTint="#f10028" />
+
+        <ImageView
+            android:id="@+id/mute_action_fab"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_mic"
+            app:backgroundTint="#FF03DAC5" />
+
+        <ImageView
+            android:id="@+id/dialpad_fab"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_weight="1"
+            android:src="@drawable/icon_dialpad"
+            app:backgroundTint="#FF03DAC5" />
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/dialPadLayout"
+        layout="@layout/dialpad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/call_icon_layout"
+        android:visibility="gone" />
+
+</RelativeLayout>

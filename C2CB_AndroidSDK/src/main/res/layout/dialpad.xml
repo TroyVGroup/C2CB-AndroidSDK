@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="60dp"
+        android:paddingBottom="10dp">
+
+        <EditText
+            android:id="@+id/numberEditText"
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:gravity="center"
+            android:lineSpacingExtra="15sp"
+            android:lineSpacingMultiplier="0.8"
+            android:textSize="18sp"
+            android:backgroundTint="#00a6ff"
+            android:textColor="#000000"
+                       />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <RelativeLayout
+            android:id="@+id/one"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/oneNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="1"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/two"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/twoNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:singleLine="true"
+                android:text="2"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/abcTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/twoNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="ABC"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/three"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/threeNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="3"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/defTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/threeNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="DEF"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <RelativeLayout
+            android:id="@+id/four"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/fourNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="4"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/ghiTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/fourNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="GHI"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/five"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/fiveNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="5"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/jklTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/fiveNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="JKL"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/six"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/sixNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="6"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/mnoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/sixNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="MNO"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <RelativeLayout
+            android:id="@+id/seven"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/sevenNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="7"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/pqrsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/sevenNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="PQRS"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/eight"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/eightNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="8"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/tuvTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/eightNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="TUV"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/nine"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/nineNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="9"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+            <TextView
+                android:id="@+id/wxyzTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/nineNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="WXYZ"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:weightSum="3">
+
+        <RelativeLayout
+            android:id="@+id/asterisk"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/asteriskNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="*"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/zero"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/zeroNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="0"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+
+            <TextView
+                android:id="@+id/plusTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/zeroNumber"
+                android:layout_centerInParent="true"
+                android:layout_marginTop="-10dp"
+                android:text="+"
+                android:textColor="#a8a8a8"
+                android:textSize="16dp" />
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/hash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
+
+            <TextView
+                android:id="@+id/hashNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:text="#"
+                android:textColor="#1346DD"
+                android:textSize="30dp" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
