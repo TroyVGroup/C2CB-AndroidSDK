@@ -12,13 +12,11 @@ import android.widget.ImageView;
 import com.c2cb.androidsdk.pojo.Modes;
 
 public class MainActivity extends AppCompatActivity {
-
     ImageView call_icon, msg_icon, email_icon;
     int ALL_PERMISSIONS = 101;
     String channelId = "";
     Modes modes = new Modes();
     C2CVoiceActivity c2cVoiceActivity;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

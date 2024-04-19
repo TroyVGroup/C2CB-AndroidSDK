@@ -16,8 +16,7 @@ public class C2CConstants {
     public static final String CALL = "CALL";
     public static final String SMS = "SMS";
     public static final String EMAIL = "EMAIL";
-    public static final String BASE_URL = "https://c2c-uatapi.contexttocall.com/uat_c2c"; // UAT
-
+    public static final String BASE_URL = "https://apis.contexttocall.com/c2c"; // PROD
     public static final String CHANNEL_MODES = "/product/channel/ur/modes/";
     public static final String INITIATE_CALL = "/utilities/twilio/ur/initiate/call";
     public static final String GENERATE_TOKEN = "/utilities/twilio/ur/generate/token";
@@ -29,6 +28,5 @@ public class C2CConstants {
     public static final String SEND_EMAIL = "/utilities/mail/ur/send/mail";
     public static final String GEOCODE = "https://api.radar.io/v1/geocode/ip";
     public static final String IMAGES = "/product/channel/ur/";
-
 
 }
