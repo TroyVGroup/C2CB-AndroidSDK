@@ -35,7 +35,7 @@ public class NetworkManager {
             public void processFinish(Object obj) {
                 Modes response = (Modes) obj;
 
-                if (response.status == 200) {
+                if (response.status == 200 && !response.channel.status.equalsIgnoreCase("inactive")) {
                     call_icon.setVisibility(response.channel.callstats.enable ? View.VISIBLE : View.GONE);
                     msg_icon.setVisibility(response.channel.smsstats.enable ? View.VISIBLE : View.GONE);
                     email_icon.setVisibility(response.channel.emailstats.enable ? View.VISIBLE : View.GONE);

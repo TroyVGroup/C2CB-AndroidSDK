@@ -27,8 +27,6 @@ public class MainActivity extends AppCompatActivity {
         email_icon = findViewById(R.id.c2c_Email);
         c2cVoiceActivity = new C2CVoiceActivity(MainActivity.this);// Your Activity Name
         c2cVoiceActivity.getModes(channelId, modes, call_icon, msg_icon, email_icon);
-
-
         call_icon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
