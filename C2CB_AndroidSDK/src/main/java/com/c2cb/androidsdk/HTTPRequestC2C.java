@@ -34,7 +34,7 @@ public class HTTPRequestC2C extends AsyncTask<String, Void, String>{
         this.data = data;
         this.methd = methd;
         this.clazz = clazz;
-        this.requestURL = C2CConstants.BASE_URL +requestURL;
+        this.requestURL = NetworkManager.BASE_URL +requestURL;
     }
     public <T> HTTPRequestC2C(Boolean auth,String requestURL, String data, Method methd, HashMap<String, String> headers, Class<T> clazz, HTTPCallback asyncResponse){
         this.delegate = asyncResponse;//Assigning call back interfacethrough constructor
@@ -44,7 +44,7 @@ public class HTTPRequestC2C extends AsyncTask<String, Void, String>{
         this.methd = methd;
         this.clazz = clazz;
         if (auth){
-            this.requestURL = C2CConstants.BASE_URL +requestURL;
+            this.requestURL = NetworkManager.BASE_URL +requestURL;
         }else {
             this.requestURL = requestURL;
         }

@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class com.c2cb.androidsdk.pojo.* { *; }
+-keep class com.c2cb.androidsdk.C2CVoiceActivity { *; }
+-keep class com.c2cb.androidsdk.C2CConstants { *; }

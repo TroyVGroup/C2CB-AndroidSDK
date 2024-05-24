@@ -10,4 +10,8 @@
     <color name="colorPrimary">#f10028</color>
     <color name="colorPrimaryDark">#a3090e</color>
     <color name="colorAccent">#b0bec5</color>
+    <color name="colorButton">#00a6ff</color>
+    <color name="colorHint">#8a8a8a</color>
+    <color name="colorBackground">#404040</color>
+    <color name="colorTransparent">#00000000</color>
 </resources>

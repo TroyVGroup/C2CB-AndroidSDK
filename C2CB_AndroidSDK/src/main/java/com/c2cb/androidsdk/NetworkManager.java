@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class NetworkManager {
+
+    public static final String BASE_URL = "https://apis.contexttocall.com/c2c";
     public void getModes(final NetworkEventListener listener, String channelId, String c2cPackage, ImageView call_icon, ImageView msg_icon, ImageView email_icon) {
         String url = C2CConstants.CHANNEL_MODES + channelId;
         HashMap<String, String> headers = new HashMap<>();
@@ -77,7 +79,7 @@ public class NetworkManager {
         @Override
         protected Bitmap doInBackground(Void... params) {
             try {
-                URL urlConnection = new URL(C2CConstants.BASE_URL+C2CConstants.IMAGES+key);
+                URL urlConnection = new URL(BASE_URL+C2CConstants.IMAGES+key);
                 HttpURLConnection connection = (HttpURLConnection) urlConnection
                         .openConnection();
                 connection.setDoInput(true);
