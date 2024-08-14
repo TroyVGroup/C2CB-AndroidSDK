@@ -424,6 +424,12 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     dialog.dismiss();
                 }
             });
+            cancelImgView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                }
+            });
 
             mobileCodeButton.setOnClickListener(view -> {
                 if (numberEdittxt.getText().toString().isEmpty()) {
@@ -1185,7 +1191,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                             error.getMessage());
                     Log.e(TAG, message);
                 }
-                Toast.makeText(activity, "Connect failure", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(activity, "Connect failure", Toast.LENGTH_SHORT).show();
                 if (callConnectedDialog != null && callConnectedDialog.isShowing()){
                     callConnectedDialog.dismiss();
                 }
@@ -1199,7 +1205,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     activeCall = call;
                 }
                 Log.d(TAG, "Connected");
-                Toast.makeText(activity, "Connected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(activity, "Connected", Toast.LENGTH_SHORT).show();
             }
             @Override
             public void onReconnecting(@NonNull Call call, @NonNull CallException callException) {
@@ -1225,7 +1231,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                         Log.e(TAG, message);
                     }
                 }
-                Toast.makeText(activity, "Disconnected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(activity, "Disconnected", Toast.LENGTH_SHORT).show();
                 if (callConnectedDialog != null && callConnectedDialog.isShowing()){
                     callConnectedDialog.dismiss();
                 }
