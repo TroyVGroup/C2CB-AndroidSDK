@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class NetworkManager {
 
-    public static final String BASE_URL = "https://apis.contexttocall.com/c2c";
+    public static final String BASE_URL = "https://c2c-uatapi.contexttocall.com/uat_c2c";
     public void getModes(final NetworkEventListener listener, String channelId, String c2cPackage, ImageView call_icon, ImageView msg_icon, ImageView email_icon) {
         String url = C2CConstants.CHANNEL_MODES + channelId;
         HashMap<String, String> headers = new HashMap<>();

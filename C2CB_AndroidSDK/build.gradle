@@ -50,7 +50,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.github.TroyVGroup'
                 artifactId = 'C2CB'
-                version = "1.5"
+                version = "0.1"
             }
         }
     }
