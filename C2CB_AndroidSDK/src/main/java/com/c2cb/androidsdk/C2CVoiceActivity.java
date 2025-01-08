@@ -92,18 +92,6 @@ public class C2CVoiceActivity extends AppCompatActivity {
         c2CEmbedActivity = new C2CEmbedActivity(this.activity,origin);
     }
 
-    public void getModes(@NotNull String channelId, @NotNull Modes modes, @org.jetbrains.annotations.Nullable ImageView callIcon, @org.jetbrains.annotations.Nullable ImageView msgIcon, @org.jetbrains.annotations.Nullable ImageView emailIcon) {
-        if (c2CEmbedActivity != null){
-            c2CEmbedActivity.getModes(channelId, modes, callIcon, msgIcon, emailIcon);
-        }
-    }
-
-    public void getCallDetails(@NotNull String channelId, @NotNull Modes modes, @NotNull String call) {
-        if (c2CEmbedActivity != null){
-            c2CEmbedActivity.getCallDetails(channelId, modes, call);
-        }
-    }
-
     public void showError(@NotNull String title, @NotNull String message) {
         if (c2CEmbedActivity != null){
             c2CEmbedActivity.showError(title, message);
@@ -117,4 +105,18 @@ public class C2CVoiceActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    public void getModes(@NotNull String channelId, @NotNull Modes modes, @org.jetbrains.annotations.Nullable ImageView callIcon, @org.jetbrains.annotations.Nullable ImageView msgIcon, @org.jetbrains.annotations.Nullable ImageView emailIcon) {
+        if (c2CEmbedActivity != null){
+            c2CEmbedActivity.getModes(channelId, modes, callIcon, msgIcon, emailIcon);
+        }
+    }
+
+    public void getCallDetails(@NotNull String channelId, @NotNull Modes modes, @NotNull String call) {
+        if (c2CEmbedActivity != null){
+            c2CEmbedActivity.getCallDetails(channelId, modes, call);
+        }
+    }
+
+
 }

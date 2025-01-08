@@ -151,6 +151,20 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         }, channelId, origin, call_icon, msg_icon, email_icon);
     }
 
+    public void handleActivityResult(int requestCode, int resultCode, Intent data)  {
+        if (requestCode == REQUEST_CODE_CAPTURE_IMAGE && resultCode == RESULT_OK) {
+            uploadImage(this.imageUri,activity, origin,channelID);
+        }
+
+        if (requestCode == REQUEST_CODE_PICK_IMAGES && resultCode == RESULT_OK) {
+            if (data.getData() != null) {
+                // Single image selected
+                this.imageUri = data.getData();
+                uploadImage(this.imageUri,activity, origin,channelID);
+            }
+        }
+    }
+
     public void getIP() {
         if (!isOnline()) {
             return;
@@ -1370,19 +1384,6 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         };
     }
 
-    public void handleActivityResult(int requestCode, int resultCode, Intent data)  {
-        if (requestCode == REQUEST_CODE_CAPTURE_IMAGE && resultCode == RESULT_OK) {
-            uploadImage(this.imageUri,activity, origin,channelID);
-        }
-
-        if (requestCode == REQUEST_CODE_PICK_IMAGES && resultCode == RESULT_OK) {
-            if (data.getData() != null) {
-                // Single image selected
-                this.imageUri = data.getData();
-                uploadImage(this.imageUri,activity, origin,channelID);
-            }
-        }
-    }
 
     private void uploadImage(Uri imageUri, Activity activity, String origin, String channelId) {
         isImageUploaded = false;

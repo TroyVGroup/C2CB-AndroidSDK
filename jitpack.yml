@@ -6,5 +6,5 @@ before_install:
   - ./scripts/prepareJitpackEnvironment.sh
 install:
   - FILE="-Dfile=C2CB_AndroidSDK-release.aar"
-  - mvn install:install-file $FILE -DgroupId=com.github.TroyVGroup -DartifactId=C2CB -Dversion=1.8.1 -Dpackaging=aar -DgeneratePom=true
+  - mvn install:install-file $FILE -DgroupId=com.github.TroyVGroup -DartifactId=C2CB -Dversion=1.8.2 -Dpackaging=aar -DgeneratePom=true
 

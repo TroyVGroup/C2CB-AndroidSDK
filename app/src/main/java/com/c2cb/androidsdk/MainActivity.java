@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
+
 import android.view.View;
 import android.widget.ImageView;
 
@@ -17,13 +17,13 @@ import com.c2cb.androidsdk.pojo.Modes;
 public class MainActivity extends AppCompatActivity {
     ImageView call_icon, msg_icon, email_icon;
     int ALL_PERMISSIONS = 101;
-    String channelId = "";
+    String channelId = "677e3fcebe93ab507fbbfcd2";
     Modes modes = new Modes();
     C2CVoiceActivity c2cVoiceActivity;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main);
 
         call_icon = findViewById(R.id.c2c_Call);
         msg_icon = findViewById(R.id.c2c_Msg);
