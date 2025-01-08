@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -15,7 +17,7 @@ import com.c2cb.androidsdk.pojo.Modes;
 public class MainActivity extends AppCompatActivity {
     ImageView call_icon, msg_icon, email_icon;
     int ALL_PERMISSIONS = 101;
-    String channelId = "677e3fcebe93ab507fbbfcd2";
+    String channelId = "";
     Modes modes = new Modes();
     C2CVoiceActivity c2cVoiceActivity;
     @Override
@@ -62,4 +64,13 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(MainActivity.this, permissions, ALL_PERMISSIONS);
 
     }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (c2cVoiceActivity != null) {
+            c2cVoiceActivity.handleActivityResult(requestCode, resultCode, data);
+        }
+    }
+
 }

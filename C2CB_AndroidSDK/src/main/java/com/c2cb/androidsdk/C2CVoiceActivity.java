@@ -89,7 +89,7 @@ public class C2CVoiceActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
-        c2CEmbedActivity = new C2CEmbedActivity(this.activity,"com.te.android");
+        c2CEmbedActivity = new C2CEmbedActivity(this.activity,origin);
     }
 
     public void getModes(@NotNull String channelId, @NotNull Modes modes, @org.jetbrains.annotations.Nullable ImageView callIcon, @org.jetbrains.annotations.Nullable ImageView msgIcon, @org.jetbrains.annotations.Nullable ImageView emailIcon) {
