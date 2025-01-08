@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notes">Note: * denotes a required field</string>
+    <string name="context_option">Context option</string>
+    <string name="first_name">First Name*</string>
+    <string name="last_name">Last Name*</string>
+    <string name="emailOTP">Enter verification code for Email Address</string>
+    <string name="contact_no_OTP">Enter verification code for Contact number</string>
+    <string name="enter_msg">Enter message*</string>
+</resources>

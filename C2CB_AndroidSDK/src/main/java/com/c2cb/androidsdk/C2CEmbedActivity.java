@@ -3,18 +3,24 @@ package com.c2cb.androidsdk;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.text.Editable;
+import android.text.InputType;
+import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
@@ -22,8 +28,10 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -35,6 +43,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Chronometer;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -46,11 +55,14 @@ import android.widget.Toast;
 
 import com.c2cb.androidsdk.pojo.C2CAddress;
 import com.c2cb.androidsdk.pojo.Country;
+import com.c2cb.androidsdk.pojo.ImageUploadResponse;
 import com.c2cb.androidsdk.pojo.InitiateC2C;
 import com.c2cb.androidsdk.pojo.Modes;
 import com.c2cb.androidsdk.pojo.SuccessC2C;
 import com.c2cb.androidsdk.pojo.TokenPojo;
 import com.c2cb.androidsdk.pojo.ValidateOTP;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.gson.Gson;
 import com.twilio.audioswitch.AudioSwitch;
 import com.twilio.voice.Call;
@@ -82,6 +94,15 @@ public class C2CEmbedActivity  extends AppCompatActivity {
     public Call.Listener callListener = callListener();
     public AudioSwitch audioSwitch;
     private C2CAddress c2CAddress;
+    private int REQUEST_CODE_CAPTURE_IMAGE = 1002;
+    private int REQUEST_CODE_PICK_IMAGES = 1001;
+    private Uri imageUri;
+    private String channelID;
+    private TextView previewImageTxt;
+    private ImageView icon_verified;
+    private String imageName = "", imageFolder ="";
+    private  ProgressBar progressBar;
+    private boolean isImageUploaded = false;
 
     public C2CEmbedActivity(Activity activity, String origin) {
         this.activity = activity;
@@ -101,11 +122,12 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
+
     public void getModes(@NotNull String channelId, final Modes modes, ImageView call_icon, ImageView msg_icon, ImageView email_icon) {
-        if (!isOnline()){
+        if (!isOnline()) {
             return;
         }
-
+        this.channelID = channelId;
         getIP();
         new NetworkManager().getModes(new NetworkEventListener() {
             @Override
@@ -121,23 +143,26 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                 }
 
             }
+
             @Override
             public void OnError(String exception) {
+                Log.d("error getting points","error getting points");
             }
         }, channelId, origin, call_icon, msg_icon, email_icon);
     }
 
-    public void getIP(){
-        if (!isOnline()){
+    public void getIP() {
+        if (!isOnline()) {
             return;
         }
         new NetworkManager().getDeviceIP(new NetworkEventListener() {
             @Override
             public void OnSuccess(Object object) {
-                if (activity != null){
+                if (activity != null) {
                     c2CAddress = (C2CAddress) object;
                 }
             }
+
             @Override
             public void OnError(String exception) {
             }
@@ -145,294 +170,529 @@ public class C2CEmbedActivity  extends AppCompatActivity {
     }
 
     public void getCallDetails(@NotNull String channelId, @NotNull Modes modes, @NotNull String id) {
-//        if (isCellularCallActive){
-//            showError("Message", "You can't place a call, if you're already on a phone call.");
-//            return;
-//        }
+
 
         boolean isVerificationRequired = false;
-        if(id == C2CConstants.CALL){
+        if (id == C2CConstants.CALL) {
             isVerificationRequired = modes.channel.preferences.isCallVerificationRequired();
-        }else if(id == C2CConstants.EMAIL){
+        } else if (id == C2CConstants.EMAIL) {
             isVerificationRequired = modes.channel.preferences.isEmailVerificationRequired();
-        }else {
+        } else {
             isVerificationRequired = modes.channel.preferences.isSMSVerificationRequired();
         }
 
-        if (isVerificationRequired) {
 
-            Dialog dialog = new Dialog(activity);
-            dialog.setContentView(R.layout.popup_dialog);
-            Window window = dialog.getWindow();
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT);
-            ArrayList<String> countries = new ArrayList<>();
-            countries.add("Select Country");
-            int currentCountry = -1,countNo = 0;
-            for (Country country : modes.channel.countries) {
-                countries.add(country.code + " " + country.country);
-                if (c2CAddress != null){
-                    if(country.country.equalsIgnoreCase(c2CAddress.address.country)){
+        Dialog dialog = new Dialog(activity);
+        dialog.setContentView(R.layout.popup_dialog);
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.WRAP_CONTENT);
+        ArrayList<String> countries = new ArrayList<>();
+        countries.add("Select Country");
+        int currentCountry = -1, countNo = 0;
+        for (Country country : modes.channel.countries) {
+            countries.add(country.code + " " + country.country);
+            if (c2CAddress != null) {
+                if (country.country.equalsIgnoreCase(c2CAddress.address.country)) {
 
-                        currentCountry = countNo;
-                    }
+                    currentCountry = countNo;
                 }
-                countNo++;
             }
-            Spinner countrySpinner = dialog.findViewById(R.id.country_spinner);
-            ArrayAdapter countryAdapter = new ArrayAdapter(
-                    activity, R.layout.c2cspinner,
-                    countries
-            );
+            countNo++;
+        }
+        Spinner countrySpinner = dialog.findViewById(R.id.country_spinner);
+        ArrayAdapter countryAdapter = new ArrayAdapter(
+                activity, R.layout.c2cspinner,
+                countries
+        );
 
-            countryAdapter.setDropDownViewResource(R.layout.c2cspinner_dropdown);
-            countrySpinner.setAdapter(countryAdapter);
-            final String[] selectedCountry = {""};
-            if (currentCountry>0){
-                countrySpinner.setSelection(currentCountry+1);
-            }
-            countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> arg0, View arg1,
-                                           int pos, long id) {
-                    if (pos>0){
-                        selectedCountry[0] = countries.get(pos);
-                    }else {
-                        selectedCountry[0] = "";
-                    }
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> arg0) {
+        countryAdapter.setDropDownViewResource(R.layout.c2cspinner_dropdown);
+        countrySpinner.setAdapter(countryAdapter);
+        final String[] selectedCountry = {""};
+        if (currentCountry > 0) {
+            countrySpinner.setSelection(currentCountry + 1);
+        }
+        countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int pos, long id) {
+                if (pos > 0) {
+                    selectedCountry[0] = countries.get(pos);
+                } else {
                     selectedCountry[0] = "";
+                }
+            }
 
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                selectedCountry[0] = "";
+
+            }
+        });
+
+        TextView titleTextView = dialog.findViewById(R.id.title_txt_view);
+        LinearLayout extLayout = dialog.findViewById(R.id.extLayout);
+        PoppinsNormalTextView noteTextView = dialog.findViewById(R.id.noteTextView);
+        PoppinsNormalTextView context_label = dialog.findViewById(R.id.context_label);
+        FloatingLabelEditText firstNameEdittxt = dialog.findViewById(R.id.firstNameEditText);
+        FloatingLabelEditText lastNameEdittxt = dialog.findViewById(R.id.lastNameEditText);
+        FloatingLabelEditText numberEdittxt = dialog.findViewById(R.id.numberEditText);
+        FloatingLabelEditText mobileOTPEditText = dialog.findViewById(R.id.mobileOTPEditText);
+        FloatingLabelEditText emailOTPEditText = dialog.findViewById(R.id.emailOTPEditText);
+        FloatingLabelEditText emailEditText = dialog.findViewById(R.id.emailEditText);
+        PoppinsEditTextView extensionEditTxt = dialog.findViewById(R.id.extensionEditTxt);
+
+        LinearLayout nameLayout = dialog.findViewById(R.id.name_layout);
+        LinearLayout numberLayout = dialog.findViewById(R.id.number_layout);
+        LinearLayout mobileOTPLayout = dialog.findViewById(R.id.mobileOTPLayout);
+        LinearLayout emailLayout = dialog.findViewById(R.id.email_layout);
+        LinearLayout emailOTPLayout = dialog.findViewById(R.id.emailOTPLayout);
+        LinearLayout detailsLayout = dialog.findViewById(R.id.details_layout);
+        LinearLayout messageLayout = dialog.findViewById(R.id.messageLayout);
+        LinearLayout subjectLayout = dialog.findViewById(R.id.subjectLayout);
+        LinearLayout attachLayout = dialog.findViewById(R.id.attachLayout);
+        TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
+        ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
+        ImageView icon_attach = dialog.findViewById(R.id.icon_attach);
+        ImageView icon_camera = dialog.findViewById(R.id.icon_camera);
+        icon_verified = dialog.findViewById(R.id.icon_verified);
+        CheckBox termsCheckBox = dialog.findViewById(R.id.accept_terms_and_conditions);
+        CheckBox extensionChkBox = dialog.findViewById(R.id.extensionChkBox);
+        PoppinsBoldTextView connectTxt = dialog.findViewById(R.id.connectTxt);
+        FloatingMessageEditTxt messageEditText = dialog.findViewById(R.id.messageEditText);
+        FloatingLabelEditText subjectEditText = dialog.findViewById(R.id.subjectEditText);
+        TextView termsTextView = dialog.findViewById(R.id.Terms_and_condition_text);
+        previewImageTxt = dialog.findViewById(R.id.previewImageTxt);
+        previewImageTxt.setVisibility(View.GONE);
+        progressBar = dialog.findViewById(R.id.progressBar);
+        ImageView poweredByImgView = dialog.findViewById(R.id.poweredByImgView);
+        ChipGroup chipGroup = dialog.findViewById(R.id.chip_group);
+        TextView count = dialog.findViewById(R.id.count);
+        RelativeLayout bubbleLayout = dialog.findViewById(R.id.bubbleLayout);
+
+        setSpannableText(noteTextView,activity.getString(R.string.notes));
+        if(modes.channel.preferences.isContextMandatory(id) ){
+            setSpannableText(context_label,activity.getString(R.string.context_option)+"*");
+        }else {
+            setSpannableText(context_label,activity.getString(R.string.context_option));
+        }
+        if(modes.channel.preferences.isVerifycontact(id) && id == C2CConstants.CALL ){
+            extLayout.setVisibility(View.VISIBLE);
+        }else {
+            extLayout.setVisibility(View.GONE);
+        }
+        if(modes.channel.preferences.isUploadImageMandatory(id) ){
+            setSpannableText(dialog.findViewById(R.id.attach_label),activity.getString(R.string.attach_image)+"*");
+        }else {
+            setSpannableText(dialog.findViewById(R.id.attach_label),activity.getString(R.string.attach_image));
+        }
+        if(modes.channel.preferences.isBubbleRequired(id) ){
+            bubbleLayout.setVisibility(View.VISIBLE);
+        }else {
+            bubbleLayout.setVisibility(View.GONE);
+        }
+
+        if (id == C2CConstants.CALL) {
+            titleTextView.setText(C2CConstants.CALL_Form);
+        } else if (id == C2CConstants.EMAIL) {
+            titleTextView.setText(C2CConstants.EMAIL_Form);
+        } else {
+            titleTextView.setText(C2CConstants.SMS_Form);
+        }
+
+        icon_attach.setColorFilter(activity.getResources().getColor(R.color.bubbleColor));
+        icon_camera.setColorFilter(activity.getResources().getColor(R.color.bubbleColor));
+        messageEditText.setHeight(120);
+
+        if (id == C2CConstants.SMS) {
+            count.setVisibility(View.VISIBLE);
+            messageEditText.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    count.setText(s.toString().length() + "/160");
                 }
             });
+        }
 
-            TextView titleTextView = dialog.findViewById(R.id.title_txt_view);
-            EditText firstNameEdittxt = dialog.findViewById(R.id.firstNameEditText);
-            EditText lastNameEdittxt = dialog.findViewById(R.id.lastNameEditText);
-            EditText numberEdittxt = dialog.findViewById(R.id.numberEditText);
-            EditText mobileOTPEditText = dialog.findViewById(R.id.mobileOTPEditText);
-            EditText emailOTPEditText = dialog.findViewById(R.id.emailOTPEditText);
-            EditText msgEdittxt = dialog.findViewById(R.id.messageEditText);
-            EditText emailEditText = dialog.findViewById(R.id.emailEditText);
-            Button mobileCodeButton = dialog.findViewById(R.id.get_code_button);
-            Button verifyEmailOtpButton =
-                    dialog.findViewById(R.id.verifyEmailOtpButton);
-            LinearLayout codeLayout = dialog.findViewById(R.id.get_code_layout);
-            LinearLayout emailVerifyLayout = dialog.findViewById(R.id.verify_email_layout);
-            LinearLayout nameLayout = dialog.findViewById(R.id.name_layout);
-            LinearLayout numberLayout = dialog.findViewById(R.id.number_layout);
-            LinearLayout mobileOTPLayout = dialog.findViewById(R.id.mobileOTPLayout);
-            LinearLayout emailLayout = dialog.findViewById(R.id.email_layout);
-            LinearLayout emailOTPLayout = dialog.findViewById(R.id.emailOTPLayout);
-            LinearLayout detailsLayout = dialog.findViewById(R.id.details_layout);
-            LinearLayout messageLayout = dialog.findViewById(R.id.messageLayout);
-            TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
-            ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
-            CheckBox termsCheckBox = dialog.findViewById(R.id.accept_terms_and_conditions);
-            Button connectButton = dialog.findViewById(R.id.connectButton);
-            EditText messageEditText = dialog.findViewById(R.id.messageEditText);
-            TextView termsTextView = dialog.findViewById(R.id.Terms_and_condition_text);
-            ProgressBar progressBar = dialog.findViewById(R.id.progressBar);
-            TextView poweredByTextView = dialog.findViewById(R.id.poweredByTextView);
-            TextView count = dialog.findViewById(R.id.count);
-            titleTextView.setText(id);
+        extensionChkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    // Checkbox is checked
+                    extensionEditTxt.setFocusable(true);
+                    extensionEditTxt.setFocusableInTouchMode(true);
+                    extensionEditTxt.setCursorVisible(true);
 
-            if(id == C2CConstants.SMS){
-                count.setVisibility(View.VISIBLE);
-                messageEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//                    Toast.makeText(getApplicationContext(), "Checked!", Toast.LENGTH_SHORT).show();
+                } else {
+                    // Checkbox is unchecked
+                    extensionEditTxt.setFocusable(false);
+                    extensionEditTxt.setFocusableInTouchMode(false);
+                    extensionEditTxt.setCursorVisible(false); // Hides the cursor
+//                    Toast.makeText(getApplicationContext(), "Unchecked!", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        extensionEditTxt.setFocusable(false);
+        extensionEditTxt.setFocusableInTouchMode(false);
+        extensionEditTxt.setCursorVisible(false); // Hides the cursor
 
+        poweredByImgView.setOnClickListener(view -> {
+            Dialog dialog1 = new Dialog(activity);
+            dialog1.setContentView(R.layout.web_view_popup);
+            Window window1 = dialog1.getWindow();
+            window1.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT);
+
+            WebView webView = dialog1.findViewById(R.id.webview);
+            ProgressBar progressBarWebView = dialog1.findViewById(R.id.progressBar);
+            TextView cancelTextView1 = dialog1.findViewById(R.id.cancelTextView);
+
+            webView.getSettings().setLoadsImagesAutomatically(true);
+            webView.getSettings().setJavaScriptEnabled(true);
+            webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+
+            webView.setWebChromeClient(new WebChromeClient() {
+                public void onProgressChanged(WebView view, int progress) {
+                    progressBarWebView.setVisibility(View.VISIBLE);
+                    if (progress == 100) {
+                        progressBarWebView.setVisibility(View.GONE);
                     }
+                }
+            });
+            webView.loadUrl("https://contexttocall.com/");
+            cancelTextView1.setOnClickListener(view1 ->
+                    dialog1.cancel());
+            dialog1.show();
 
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+        });
 
-                    }
+        SpannableString ss = new SpannableString("I agree to the terms and conditions");
 
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        count.setText(s.toString().length() + "/160");
+        ClickableSpan clickableSpan = new ClickableSpan() {
+            @Override
+            public void onClick(@NonNull View view) {
+                Dialog dialog = new Dialog(activity);
+                dialog.setContentView(R.layout.web_view_popup);
+                Window window = dialog.getWindow();
+                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT);
+
+                WebView webView = dialog.findViewById(R.id.webview);
+                ProgressBar progressBarWebView = dialog.findViewById(R.id.progressBar);
+                TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
+
+                webView.getSettings().setLoadsImagesAutomatically(true);
+                webView.getSettings().setJavaScriptEnabled(true);
+                WebSettings settings = webView.getSettings();
+                settings.setDomStorageEnabled(true);
+                webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+                webView.setWebChromeClient(new WebChromeClient() {
+                    public void onProgressChanged(WebView view, int progress) {
+                        progressBarWebView.setVisibility(View.VISIBLE);
+                        if (progress == 100) {
+                            progressBarWebView.setVisibility(View.GONE);
+                        }
                     }
                 });
+
+                webView.loadUrl("https://app.contexttocall.com/terms");
+
+                cancelTextView.setOnClickListener(view1 ->
+                        dialog.cancel());
+                dialog.show();
             }
 
-            poweredByTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Dialog dialog = new Dialog(activity);
-                    dialog.setContentView(R.layout.web_view_popup);
-                    Window window = dialog.getWindow();
-                    window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                            WindowManager.LayoutParams.WRAP_CONTENT);
+            @Override
+            public void updateDrawState(@NonNull TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(activity.getResources().getColor(R.color.bubbleColor));
+            }
 
-                    WebView webView = dialog.findViewById(R.id.webview);
-                    ProgressBar progressBarWebView = dialog.findViewById(R.id.progressBar);
-                    TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
+        };
+        ss.setSpan(clickableSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    webView.getSettings().setLoadsImagesAutomatically(true);
-                    webView.getSettings().setJavaScriptEnabled(true);
-                    webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+        StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
+        ss.setSpan(boldSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    webView.setWebChromeClient(new WebChromeClient() {
-                        public void onProgressChanged(WebView view, int progress) {
-                            progressBarWebView.setVisibility(View.VISIBLE);
-                            if(progress == 100){
-                                progressBarWebView.setVisibility(View.GONE);
+        termsTextView.setText(ss);
+        termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
+        termsTextView.setHighlightColor(Color.TRANSPARENT);
+
+        connectTxt.setOnClickListener(view -> {
+
+            if (progressBar.getVisibility() == View.VISIBLE){
+                showError("Message", "Please wait");
+            }
+            else if (termsCheckBox.isChecked()) {
+                if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(firstNameEdittxt.getEditText())) {
+                    showError("Message", "Enter first name.");
+                } else if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(lastNameEdittxt.getEditText())) {
+                    showError("Message", "Enter last name.");
+                } else if (modes.channel.preferences.isContact(id) && TextUtils.isEmpty(numberEdittxt.getEditText())) {
+                    showError("Message", "Enter valid contact number.");
+                } else if (modes.channel.preferences.isEmail(id) && TextUtils.isEmpty(emailEditText.getEditText())) {
+                    showError("Message", "Please enter email address.");
+                } else if (modes.channel.preferences.isEmail(id) && !isValidString(emailEditText.getEditText())) {
+                    showError("Message", "Please enter valid email address.");
+                }  else if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id) && emailOTPEditText.getTag().toString().equals("false")) {
+                    showError("Message", "Please enter Email OTP.");
+                } else if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id) && mobileOTPEditText.getTag().toString().equals("false")) {
+                    showError("Message", "Please enter Contact number OTP.");
+                } else if(modes.channel.preferences.isSubjectRequired(id) && TextUtils.isEmpty(subjectEditText.getEditText()) ){
+                    showError("Message", "Please enter subject.");
+                }else if( modes.channel.preferences.isContextMandatory(id)  && !isChipSelected(chipGroup)){
+                    showError("Message", "Please select context.");
+                }else if( modes.channel.preferences.isUploadImageMandatory(id) && TextUtils.isEmpty(imageName)){
+                    showError("Message", "Please attach image.");
+                } else if (modes.channel.preferences.isMessage(id) && TextUtils.isEmpty(messageEditText.getEditText())) {
+                    showError("Message", "Please enter message here.");
+                }else {
+                    InitiateC2C initiateC2C = new InitiateC2C();
+                    if (activity != null) {
+                        C2C_Location locationTrack = new C2C_Location(activity);
+                        if (locationTrack.canGetLocation()) {
+                            double longitude = locationTrack.getLongitude();
+                            double latitude = locationTrack.getLatitude();
+                            if (latitude != 0.0 && longitude != 0.0) {
+                                initiateC2C.setLatLong(latitude + "," + longitude);
+                            } else if (c2CAddress != null) {
+                                setLatlong(initiateC2C);
                             }
+                        } else if (c2CAddress != null) {
+                            setLatlong(initiateC2C);
                         }
-                    });
-                    webView.loadUrl("https://contexttocall.com/");
-                    cancelTextView.setOnClickListener(view1 ->
-                            dialog.cancel());
-                    dialog.show();
+                    }
+                    initiateC2C.setChannelId(channelId);
+                    initiateC2C.setName(firstNameEdittxt.getEditText() + " " + lastNameEdittxt.getEditText());
+                    initiateC2C.setFname(firstNameEdittxt.getEditText());
+                    StringBuilder selectedChips = new StringBuilder("");
 
-                }
-            });
 
-            SpannableString ss = new SpannableString("I agree to the terms and conditions");
-
-            ClickableSpan clickableSpan = new ClickableSpan() {
-                @Override
-                public void onClick(@NonNull View view) {
-                    Dialog dialog = new Dialog(activity);
-                    dialog.setContentView(R.layout.web_view_popup);
-                    Window window = dialog.getWindow();
-                    window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                            WindowManager.LayoutParams.WRAP_CONTENT);
-
-                    WebView webView = dialog.findViewById(R.id.webview);
-                    ProgressBar progressBarWebView = dialog.findViewById(R.id.progressBar);
-                    TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
-
-                    webView.getSettings().setLoadsImagesAutomatically(true);
-                    webView.getSettings().setJavaScriptEnabled(true);
-                    WebSettings settings = webView.getSettings();
-                    settings.setDomStorageEnabled(true);
-                    webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-                    webView.setWebChromeClient(new WebChromeClient() {
-                        public void onProgressChanged(WebView view, int progress) {
-                            progressBarWebView.setVisibility(View.VISIBLE);
-                            if(progress == 100){
-                                progressBarWebView.setVisibility(View.GONE);
+                    // Iterate through all chips in the ChipGroup
+                    for (int i = 0; i < chipGroup.getChildCount(); i++) {
+                        Chip chip = (Chip) chipGroup.getChildAt(i);
+                        if (chip.isChecked()) {
+                            if (!TextUtils.isEmpty(selectedChips)){
+                                selectedChips.append("| ");
                             }
-                        }
-                    });
-
-                    webView.loadUrl("https://app.contexttocall.com/terms");
-
-                    cancelTextView.setOnClickListener(view1 ->
-                            dialog.cancel());
-                    dialog.show();
-                }
-
-                @Override
-                public void updateDrawState(@NonNull TextPaint ds) {
-                    super.updateDrawState(ds);
-                    ds.setColor(Color.parseColor("#00a6ff"));
-                }
-
-            };
-            ss.setSpan(clickableSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
-            ss.setSpan(boldSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            termsTextView.setText(ss);
-            termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
-            termsTextView.setHighlightColor(Color.TRANSPARENT);
-
-            connectButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (termsCheckBox.isChecked()) {
-                        if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(firstNameEdittxt.getText().toString())) {
-                            showError("Message", "Enter first name.");
-                        } else if (modes.channel.preferences.isName(id) &&TextUtils.isEmpty(lastNameEdittxt.getText().toString())) {
-                            showError("Message", "Enter last name.");
-                        } else if (modes.channel.preferences.isContact(id) && TextUtils.isEmpty(numberEdittxt.getText().toString())) {
-                            showError("Message", "Enter valid contact number.");
-                        } else if (modes.channel.preferences.isEmail(id) && TextUtils.isEmpty(emailEditText.getText().toString())) {
-                            showError("Message", "Please enter email address.");
-                        } else if (modes.channel.preferences.isEmail(id) && !isValidString(emailEditText.getText().toString())) {
-                            showError("Message", "Please enter valid email address.");
-                        } else if (modes.channel.preferences.isMessage(id) && TextUtils.isEmpty(messageEditText.getText().toString())) {
-                            showError("Message", "Please enter message here.");
-                        } else if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id) && emailOTPEditText.getTag().toString().equals("false")) {
-                            showError("Message", "Please enter Email OTP.");
-                        } else if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id) && mobileOTPEditText.getTag().toString().equals("false")) {
-                            showError("Message", "Please enter Contact number OTP.");
-                        } else {
-                            InitiateC2C initiateC2C = new InitiateC2C();
-                            if (activity !=null){
-                                C2C_Location locationTrack = new C2C_Location(activity);
-                                if (locationTrack.canGetLocation()) {
-                                    double longitude = locationTrack.getLongitude();
-                                    double latitude = locationTrack.getLatitude();
-                                    if (latitude != 0.0 && longitude != 0.0){
-                                        initiateC2C.setLatLong(latitude +","+ longitude);
-                                    }else if (c2CAddress != null){
-                                        setLatlong(initiateC2C);
-                                    }
-                                }else if (c2CAddress != null){
-                                    setLatlong(initiateC2C);
-                                }
-                            }
-                            initiateC2C.setChannelId(channelId);
-                            initiateC2C.setName(firstNameEdittxt.getText().toString() + " " + lastNameEdittxt.getText().toString());
-
-                            initiateC2C.setNumotp(mobileOTPEditText.getText().toString());
-                            initiateC2C.setMailotp(emailOTPEditText.getText().toString());
-
-                            initiateC2C.setNumber(numberEdittxt.getText().toString());
-                            for (Country country : modes.channel.countries) {
-                                if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
-                                    initiateC2C.setCountrycode(country.code);
-                                    break;
-                                }
-                            }
-
-                            if (id.equals(C2CConstants.CALL)) {
-                                initiateC2C.setEmail(emailEditText.getText().toString());
-                                initiateC2C.setMessage(messageEditText.getText().toString());
-                                initiateCall(initiateC2C, dialog, progressBar);
-                            } else {
-
-                                if (id.equals(C2CConstants.SMS)) {
-                                    initiateC2C.setEmail(emailEditText.getText().toString());
-                                    initiateC2C.setMessage(messageEditText.getText().toString());
-                                    sendMessage(initiateC2C, dialog, progressBar);
-                                } else if (id.equals(C2CConstants.EMAIL)) {
-                                    initiateC2C.setMessage(messageEditText.getText().toString());
-                                    sendEmail(initiateC2C, dialog, progressBar);
-                                }
-                            }
+                            selectedChips.append(chip.getText());
 
                         }
+                    }
+                    if (!TextUtils.isEmpty(subjectEditText.getEditText())){
+                        if (!TextUtils.isEmpty(selectedChips)){
+                            selectedChips.append("| ").append(subjectEditText.getEditText());
+                        }else {
+                            selectedChips.append(subjectEditText.getEditText());
+                        }
+                    }
+
+                    initiateC2C.setSubject(selectedChips.toString());
+
+                    initiateC2C.setImageFolder(imageFolder);
+                    initiateC2C.setImageName(imageName);
+                    initiateC2C.setLname(lastNameEdittxt.getEditText());
+                    initiateC2C.setNumotp(mobileOTPEditText.getEditText());
+                    initiateC2C.setMailotp(emailOTPEditText.getEditText());
+
+                    initiateC2C.setNumber(numberEdittxt.getEditText());
+                    for (Country country : modes.channel.countries) {
+                        if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
+                            initiateC2C.setCountrycode(country.code);
+                            break;
+                        }
+                    }
+
+                    if (id.equals(C2CConstants.CALL)) {
+                        if (!TextUtils.isEmpty(extensionEditTxt.getText().toString())){
+                            initiateC2C.setExtension(extensionEditTxt.getText().toString());
+                        }
+                        initiateC2C.setEmail(emailEditText.getEditText());
+                        initiateC2C.setMessage(messageEditText.getEditText());
+                        initiateCall(initiateC2C, dialog, progressBar);
                     } else {
-                        showError("Message", "Please check and agree the terms & conditions.");
+
+                        if (id.equals(C2CConstants.SMS)) {
+                            initiateC2C.setEmail(emailEditText.getEditText());
+                            initiateC2C.setMessage(messageEditText.getEditText());
+                            sendMessage(initiateC2C, dialog, progressBar);
+                        } else if (id.equals(C2CConstants.EMAIL)) {
+                            initiateC2C.setMessage(messageEditText.getEditText());
+                            sendEmail(initiateC2C, dialog, progressBar);
+                        }
+                    }
+
+                }
+            } else {
+                showError("Message", "Please check and agree the terms & conditions.");
+            }
+        });
+
+        cancelTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        cancelImgView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+        previewImageTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Dialog dialog = new Dialog(activity);
+                dialog.setContentView(R.layout.preview_dialog);
+                Window window = dialog.getWindow();
+                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                        WindowManager.LayoutParams.WRAP_CONTENT);
+                ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
+                ImageView deleteImgView = dialog.findViewById(R.id.deleteImgView);
+                ImageView selectedImage = dialog.findViewById(R.id.selectedImage);
+                deleteImgView.setColorFilter(activity.getResources().getColor(R.color.white));
+                cancelImgView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.cancel();
+                    }
+                });
+                deleteImgView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(!TextUtils.isEmpty(imageFolder) && !TextUtils.isEmpty(imageName)){
+                            deleteImage(channelId);
+                        }
+
+                        dialog.cancel();
+                    }
+                });
+                selectedImage.setImageURI(imageUri);
+                dialog.setCancelable(false);
+                dialog.show();
+
+            }
+        });
+        icon_attach.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                activity.startActivityForResult(galleryIntent, REQUEST_CODE_PICK_IMAGES);
+            }
+        });
+        icon_camera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    // Ensure that there's a camera activity to handle the intent
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Images.Media.TITLE, "New Picture");
+                    values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
+                    imageUri = activity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                    // Pass the file URI to the intent
+                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                    activity.startActivityForResult(takePictureIntent, REQUEST_CODE_CAPTURE_IMAGE);
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
+
+        if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id)) {
+
+            mobileOTPEditText.addTextChangedListener(new TextWatcher() {
+
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if (charSequence.length() == 4) {
+                        ValidateOTP validateOTP = new ValidateOTP();
+                        validateOTP.setChannelId(channelId);
+                        validateOTP.setNumber(numberEdittxt.getEditText());
+                        validateOTP.setOtp(mobileOTPEditText.getEditText());
+                        for (Country country : modes.channel.countries) {
+                            if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
+                                validateOTP.setCountrycode(country.code);
+                                break;
+                            }
+                        }
+
+                        validateOTP(mobileOTPEditText, validateOTP);
+                    } else {
+                        mobileOTPEditText.setTag(false);
                     }
                 }
-            });
 
-            cancelTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    dialog.dismiss();
+                public void afterTextChanged(Editable editable) {
+
                 }
             });
-            cancelImgView.setOnClickListener(new View.OnClickListener() {
+        }
+        if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id)) {
+            emailOTPEditText.addTextChangedListener(new TextWatcher() {
                 @Override
-                public void onClick(View view) {
-                    dialog.dismiss();
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    if (charSequence.length() == 4) {
+                        ValidateOTP validateOTP = new ValidateOTP();
+                        validateOTP.setChannelId(channelId);
+                        validateOTP.setEmail(emailEditText.getEditText());
+                        validateOTP.setOtp(emailOTPEditText.getEditText());
+
+                        validateEmailOTP(emailOTPEditText, validateOTP);
+                    } else {
+                        emailOTPEditText.setTag(false);
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {
+
                 }
             });
 
-            mobileCodeButton.setOnClickListener(view -> {
-                if (numberEdittxt.getText().toString().isEmpty()) {
+        }
+        mobileOTPLayout.setVisibility(View.GONE);
+        emailOTPLayout.setVisibility(View.GONE);
+        nameLayout.setVisibility(modes.channel.preferences.isName(id) ? View.VISIBLE : View.GONE);
+        numberLayout.setVisibility(modes.channel.preferences.isContact(id) ? View.VISIBLE : View.GONE);
+        emailLayout.setVisibility(modes.channel.preferences.isEmail(id) ? View.VISIBLE : View.GONE);
+        if (id == C2CConstants.CALL){
+            messageLayout.setVisibility(modes.channel.preferences.isMessage(id) ? View.VISIBLE : View.GONE);
+        }
+        numberEdittxt.setInputType();
+        extensionEditTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
+        numberEdittxt.setButtonVisibility(modes.channel.preferences.isVerifycontact(id),"Verify", new ButtonCallBack() {
+
+            @Override
+            public void onCLick(TextView txtView) {
+                if (numberEdittxt.getEditText().isEmpty()) {
                     showError("Message", "Enter valid contact number.");
                 } else {
                     for (Country country : modes.channel.countries) {
@@ -440,267 +700,108 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                             getSMSOTP(
                                     channelId,
                                     country.code,
-                                    numberEdittxt.getText().toString(),
-                                    mobileOTPLayout, mobileCodeButton
+                                    numberEdittxt.getEditText(),
+                                    mobileOTPLayout, txtView
                             );
                             break;
                         }
                     }
 
                 }
-            });
-
-            verifyEmailOtpButton.setOnClickListener(view -> {
-                if (TextUtils.isEmpty(emailEditText.getText().toString())) {
+            }
+        });
+        emailEditText.setButtonVisibility(modes.channel.preferences.isVerifyemail(id),"Verify", new ButtonCallBack() {
+            @Override
+            public void onCLick(TextView txtView) {
+                if (TextUtils.isEmpty(emailEditText.getEditText())) {
                     showError("Message", "Please enter email address.");
-                } else if (!isValidString(emailEditText.getText().toString())) {
+                } else if (!isValidString(emailEditText.getEditText())) {
                     showError("Message", "Please enter valid email address.");
                 } else {
-                    getEmailOTP(channelId, emailEditText.getText().toString(), emailOTPLayout, verifyEmailOtpButton);
+                    getEmailOTP(channelId, emailEditText.getEditText(), emailOTPLayout, txtView);
                 }
-            });
-
-            if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id)) {
-
-                mobileOTPEditText.addTextChangedListener(new TextWatcher() {
-
-                    @Override
-                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                        if (charSequence.length() == 4) {
-                            ValidateOTP validateOTP = new ValidateOTP();
-                            validateOTP.setChannelId(channelId);
-                            validateOTP.setNumber(numberEdittxt.getText().toString());
-                            validateOTP.setOtp(mobileOTPEditText.getText().toString());
-                            for (Country country : modes.channel.countries) {
-                                if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
-                                    validateOTP.setCountrycode(country.code);
-                                    break;
-                                }
-                            }
-
-                            validateOTP(mobileOTPEditText, validateOTP);
-                        } else {
-                            mobileOTPEditText.setTag(false);
-                        }
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable editable) {
-
-                    }
-                });
             }
-            if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id)) {
-                emailOTPEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
-                    }
 
-                    @Override
-                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                        if (charSequence.length() == 4) {
-                            ValidateOTP validateOTP = new ValidateOTP();
-                            validateOTP.setChannelId(channelId);
-                            validateOTP.setEmail(emailEditText.getText().toString());
-                            validateOTP.setOtp(emailOTPEditText.getText().toString());
-
-                            validateEmailOTP(emailOTPEditText, validateOTP);
-                        } else {
-                            emailOTPEditText.setTag(false);
-                        }
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable editable) {
-
-                    }
-                });
-
+        });
+        subjectLayout.setVisibility(modes.channel.preferences.isSubjectRequired(id) ? View.VISIBLE : View.GONE);
+        attachLayout.setVisibility(modes.channel.preferences.isUploadImage(id) ? View.VISIBLE : View.GONE);
+        chipGroup.setVisibility(modes.channel.preferences.isBubbleRequired(id) ? View.VISIBLE : View.GONE);
+        emailOTPEditText.setTag(false);
+        mobileOTPEditText.setTag(false);
+        if (modes.channel.preferences.isBubbleRequired(id)){
+            if (id == C2CConstants.CALL) {
+                for (String item : modes.channel.contexts.callContext) {
+                    addChipToGroup(item,chipGroup);
+                }
             }
-            mobileOTPLayout.setVisibility(View.GONE);
-            emailOTPLayout.setVisibility(View.GONE);
-            nameLayout.setVisibility(modes.channel.preferences.isName(id) ? View.VISIBLE : View.GONE);
-            numberLayout.setVisibility(modes.channel.preferences.isContact(id) ? View.VISIBLE : View.GONE);
-            emailLayout.setVisibility(modes.channel.preferences.isEmail(id) ? View.VISIBLE : View.GONE);
-            messageLayout.setVisibility(modes.channel.preferences.isMessage(id) ? View.VISIBLE : View.GONE);
-            codeLayout.setVisibility(modes.channel.preferences.isVerifycontact(id) ? View.VISIBLE : View.GONE);
-
-            emailVerifyLayout.setVisibility(modes.channel.preferences.isVerifyemail(id) ? View.VISIBLE : View.GONE);
-
-            emailOTPEditText.setTag(false);
-            mobileOTPEditText.setTag(false);
-
-            dialog.setCancelable(false);
-            dialog.show();
+            else if (id == C2CConstants.EMAIL) {
+                for (String item : modes.channel.contexts.emailContext) {
+                    addChipToGroup(item,chipGroup);
+                }
+            }
+            else if (id == C2CConstants.SMS){
+                for (String item : modes.channel.contexts.smsContext) {
+                    addChipToGroup(item,chipGroup);
+                }
+            }
+            if (modes.channel.preferences.isContextMultiSelect(id)){
+                chipGroup.setSingleSelection(true);
+            }else {
+                chipGroup.setSingleSelection(false);
+            }
         }
-        else {
-            Dialog dialog = new Dialog(activity);
-            dialog.setContentView(R.layout.popup_dialog);
-            Window window = dialog.getWindow();
-            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT);
-            ArrayList<String> countries = new ArrayList<>();
 
-            for (Country country : modes.channel.countries) {
-                countries.add(country.code + " " + country.country);
-            }
+        dialog.setCancelable(false);
+        dialog.show();
 
-            LinearLayout detailsLayout = dialog.findViewById(R.id.details_layout);
-            LinearLayout formLayout = dialog.findViewById(R.id.form_layout);
-            if (id.equals(C2CConstants.CALL)) {
-                detailsLayout.setVisibility(View.GONE);
-            } else {
-                formLayout.setVisibility(View.GONE);
-            }
-            TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
-            CheckBox termsCheckBox = dialog.findViewById(R.id.accept_terms_and_conditions);
-            Button connectButton = dialog.findViewById(R.id.connectButton);
-            EditText messageEditText = dialog.findViewById(R.id.messageEditText);
-            TextView titleTextView = dialog.findViewById(R.id.title_txt_view);
-            TextView termsTextView = dialog.findViewById(R.id.Terms_and_condition_text);
-            ProgressBar progressBar = dialog.findViewById(R.id.progressBar);
-            TextView count = dialog.findViewById(R.id.count);
-            if (id.equals(C2CConstants.SMS)) {
-                count.setVisibility(View.VISIBLE);
-                messageEditText.addTextChangedListener(new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        count.setText(s.toString().length() + "/160");
-                    }
-                });
-            }
-            titleTextView.setText(id);
-
-            SpannableString ss = new SpannableString("I agree to the terms and conditions");
-
-
-            ClickableSpan clickableSpan = new ClickableSpan() {
-                @Override
-                public void onClick(@NonNull View view) {
-                    Dialog dialog = new Dialog(activity);
-                    dialog.setContentView(R.layout.web_view_popup);
-                    Window window = dialog.getWindow();
-                    window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                            WindowManager.LayoutParams.WRAP_CONTENT);
-
-                    WebView webView = dialog.findViewById(R.id.webview);
-                    ProgressBar progressBarWebView = dialog.findViewById(R.id.progressBar);
-                    TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
-
-                    webView.getSettings().setLoadsImagesAutomatically(true);
-                    webView.getSettings().setJavaScriptEnabled(true);
-                    WebSettings settings = webView.getSettings();
-                    settings.setDomStorageEnabled(true);
-                    webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-                    webView.setWebChromeClient(new WebChromeClient() {
-                        public void onProgressChanged(WebView view, int progress) {
-                            progressBarWebView.setVisibility(View.VISIBLE);
-                            if(progress == 100){
-                                progressBarWebView.setVisibility(View.GONE);
-                            }
-                        }
-                    });
-
-                    webView.loadUrl("https://app.contexttocall.com/terms");
-
-                    cancelTextView.setOnClickListener(view1 ->
-                            dialog.cancel());
-                    dialog.show();
-                }
-
-                @Override
-                public void updateDrawState(@NonNull TextPaint ds) {
-                    super.updateDrawState(ds);
-                    ds.setColor(Color.BLUE);
-                    ds.isUnderlineText();
-                }
-            };
-            ss.setSpan(clickableSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
-            ss.setSpan(boldSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            termsTextView.setText(ss);
-            termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
-            termsTextView.setHighlightColor(Color.TRANSPARENT);
-
-            cancelTextView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    dialog.dismiss();
-                }
-            });
-
-            connectButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (termsCheckBox.isChecked()) {
-                        InitiateC2C initiateC2C = new InitiateC2C();
-                        if (activity !=null){
-                            C2C_Location locationTrack = new C2C_Location(activity);
-                            if (locationTrack.canGetLocation()) {
-                                double longitude = locationTrack.getLongitude();
-                                double latitude = locationTrack.getLatitude();
-                                if (latitude != 0.0 && longitude != 0.0){
-                                    initiateC2C.setLatLong(latitude +","+ longitude);
-                                }else if (c2CAddress != null){
-                                    setLatlong(initiateC2C);
-                                }
-                            }else if (c2CAddress != null){
-                                setLatlong(initiateC2C);
-                            }
-                        }
-
-                        initiateC2C.setChannelId(channelId);
-                        if (id.equals(C2CConstants.CALL)) {
-                            initiateCall(initiateC2C, dialog, progressBar);
-                        } else {
-                            if (TextUtils.isEmpty(messageEditText.getText().toString())) {
-                                showError("Message", "Please enter message");
-                            } else if (id.equals(C2CConstants.SMS)) {
-                                initiateC2C.setMessage(messageEditText.getText().toString());
-                                sendMessage(initiateC2C, dialog, progressBar);
-                            } else if (id.equals(C2CConstants.EMAIL)) {
-                                initiateC2C.setMessage(messageEditText.getText().toString());
-                                sendEmail(initiateC2C, dialog, progressBar);
-                            }
-                        }
-                    } else {
-                        showError("Message", "Please check and agree the terms & conditions.");
-                    }
-                }
-            });
-            dialog.setCancelable(false);
-            dialog.show();
-
-        }
     }
 
+    private void setSpannableText(PoppinsNormalTextView textView, String notesTxt) {
+        // Create a SpannableString from the full text
+        SpannableString spannable = new SpannableString(notesTxt); // Label Text Define the text with an asterisk
+
+        // Find the index of the asterisk
+        int asteriskIndex = notesTxt.indexOf("*");
+
+        // Apply red color to the asterisk if it exists
+        if (asteriskIndex != -1) {
+            spannable.setSpan(new ForegroundColorSpan(Color.RED), asteriskIndex, asteriskIndex + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        textView.setText(spannable);
+    }
+
+    private boolean isChipSelected(ChipGroup chipGroup) {
+        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+            Chip chip = (Chip) chipGroup.getChildAt(i);
+            if (chip.isChecked()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void addChipToGroup(String label, ChipGroup chipGroup) {
+        // Inflate a new chip from custom layout
+        Chip chip = (Chip) LayoutInflater.from(activity).inflate(R.layout.custom_chip, null, false);
+
+        // Set the chip's text (label)
+        chip.setText(label);
+        chip.setTypeface(null, Typeface.BOLD);
+        chipGroup.addView(chip);
+    }
+
+
     private void setLatlong(InitiateC2C initiateC2C) {
-        if (c2CAddress.address.geometry.coordinates.size()>0){
-            String latLong= c2CAddress.address.geometry.coordinates.get(1)+","+ c2CAddress.address.geometry.coordinates.get(0);
+        if (c2CAddress.address.geometry.coordinates.size() > 0) {
+            String latLong = c2CAddress.address.geometry.coordinates.get(1) + "," + c2CAddress.address.geometry.coordinates.get(0);
             initiateC2C.setLatLong(latLong);
         }
     }
 
-    private void validateEmailOTP(EditText emailOTPEditText, ValidateOTP validateOTP) {
-        if (!isOnline()){
+    private void validateEmailOTP(FloatingLabelEditText emailOTPEditText, ValidateOTP validateOTP) {
+        if (!isOnline()) {
             return;
         }
         String jsonString = new Gson().toJson(validateOTP);
@@ -720,15 +821,16 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     showError("Error", String.valueOf(successC2C.message));
                 }
             }
+
             @Override
             public void OnError(String exception) {
             }
-        }, jsonString,origin);
+        }, jsonString, origin);
 
     }
 
-    private void validateOTP(EditText mobileOTPEditText, ValidateOTP validateOTP) {
-        if (!isOnline()){
+    private void validateOTP(FloatingLabelEditText mobileOTPEditText, ValidateOTP validateOTP) {
+        if (!isOnline()) {
             return;
         }
         String jsonString = new Gson().toJson(validateOTP);
@@ -752,13 +854,13 @@ public class C2CEmbedActivity  extends AppCompatActivity {
             @Override
             public void OnError(String exception) {
             }
-        }, jsonString,origin);
+        }, jsonString, origin);
 
 
     }
 
-    private void getEmailOTP(String channelId, String emailID, LinearLayout emailOTPLayout, Button verifyEmailOtpButton) {
-        if (!isOnline()){
+    private void getEmailOTP(String channelId, String emailID, LinearLayout emailOTPLayout, TextView verifyEmailOtpTxtView) {
+        if (!isOnline()) {
             return;
         }
         new NetworkManager().getOTPForEmail(new NetworkEventListener() {
@@ -767,16 +869,16 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                 SuccessC2C successC2C = ((SuccessC2C) object);
                 if (successC2C.status == 200) {
                     emailOTPLayout.setVisibility(View.VISIBLE);
-                    verifyEmailOtpButton.setClickable(false);
+                    verifyEmailOtpTxtView.setClickable(false);
                     new CountDownTimer(60000, 1000) {
 
                         public void onTick(long millisUntilFinished) {
-                            verifyEmailOtpButton.setText("" + millisUntilFinished / 1000);
+                            verifyEmailOtpTxtView.setText("" + millisUntilFinished / 1000);
                         }
 
                         public void onFinish() {
-                            verifyEmailOtpButton.setText("VERIFY");
-                            verifyEmailOtpButton.setClickable(true);
+                            verifyEmailOtpTxtView.setText("Verify");
+                            verifyEmailOtpTxtView.setClickable(true);
                         }
 
                     }.start();
@@ -792,9 +894,8 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         }, channelId, emailID, origin);
     }
 
-
-    private void getSMSOTP(String channelId, String countryCode, String number, LinearLayout mobileOTPLayout, Button mobileCodeButton) {
-        if (!isOnline()){
+    private void getSMSOTP(String channelId, String countryCode, String number, LinearLayout mobileOTPLayout, TextView mobileCodeTxtView) {
+        if (!isOnline()) {
             return;
         }
         new NetworkManager().getOTPForSMS(new NetworkEventListener() {
@@ -803,14 +904,15 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                 SuccessC2C successC2C = ((SuccessC2C) object);
                 if (successC2C.status == 200) {
                     mobileOTPLayout.setVisibility(View.VISIBLE);
-                    mobileCodeButton.setClickable(false);
+                    mobileCodeTxtView.setClickable(false);
                     new CountDownTimer(60000, 1000) {
                         public void onTick(long millisUntilFinished) {
-                            mobileCodeButton.setText("" + millisUntilFinished / 1000);
+                            mobileCodeTxtView.setText("" + millisUntilFinished / 1000);
                         }
+
                         public void onFinish() {
-                            mobileCodeButton.setText("GET CODE");
-                            mobileCodeButton.setClickable(true);
+                            mobileCodeTxtView.setText("Verify");
+                            mobileCodeTxtView.setClickable(true);
                         }
 
                     }.start();
@@ -819,6 +921,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     showError("Error", String.valueOf(successC2C.message));
                 }
             }
+
             @Override
             public void OnError(String exception) {
             }
@@ -826,7 +929,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
     }
 
     private void sendEmail(InitiateC2C initiateC2C, Dialog dialog, ProgressBar progressBar) {
-        if (!isOnline()){
+        if (!isOnline()) {
             return;
         }
         progressBar.setVisibility(View.VISIBLE);
@@ -844,6 +947,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     showError("Error", String.valueOf(successC2C.message));
                 }
             }
+
             @Override
             public void OnError(String exception) {
                 progressBar.setVisibility(View.GONE);
@@ -853,7 +957,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
     }
 
     private void sendMessage(InitiateC2C initiateC2C, Dialog dialog, ProgressBar progressBar) {
-        if (!isOnline()){
+        if (!isOnline()) {
             return;
         }
         progressBar.setVisibility(View.VISIBLE);
@@ -880,14 +984,16 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         }, jsonString, origin, initiateC2C.getLatLong());
 
     }
+
     Chronometer chronometer;
     ImageView holdActionFab;
-    ImageView muteActionFab ;
+    ImageView muteActionFab;
     ImageView hangUpActionFab;
     ImageView dialPadFab;
     Dialog callConnectedDialog;
+
     private void initiateCall(InitiateC2C initiateC2C, Dialog dialogDismiss, ProgressBar progressBar) {
-        if (!isOnline()){
+        if (!isOnline()) {
             return;
         }
         progressBar.setVisibility(View.VISIBLE);
@@ -1039,13 +1145,9 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 dialogDismiss.dismiss();
             }
-        }, jsonString, activity, origin,initiateC2C.getLatLong());
+        }, jsonString, activity, origin, initiateC2C.getLatLong());
 
     }
-
-//    private void getToken(String call, String value, Activity activity) {
-//
-//    }
 
     private boolean isValidString(String emailID) {
         if (TextUtils.isEmpty(emailID)) {
@@ -1069,6 +1171,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         alert.show();
 
     }
+
     public void disconnect() {
         if (activeCall != null) {
             activeCall.disconnect();
@@ -1080,7 +1183,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         if (activeCall != null) {
             boolean hold = !activeCall.isOnHold();
             activeCall.hold(hold);
-            applyFabState(holdActionFab, hold, context,2);
+            applyFabState(holdActionFab, hold, context, 2);
         }
     }
 
@@ -1088,12 +1191,12 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         if (activeCall != null) {
             boolean mute = !activeCall.isMuted();
             activeCall.mute(mute);
-            if (mute){
+            if (mute) {
                 muteActionFab.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.icon_mic));
-            }else {
+            } else {
                 muteActionFab.setImageDrawable(ContextCompat.getDrawable(activity, R.drawable.mic_mute));
             }
-            applyFabState(muteActionFab, mute, context,1);
+            applyFabState(muteActionFab, mute, context, 1);
         }
     }
 
@@ -1113,7 +1216,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
 
     }
 
-    public void startCall(String id,String mobileNumber, String token, Context context) {
+    public void startCall(String id, String mobileNumber, String token, Context context) {
         if (mobileNumber.isEmpty()) {
             return;
         }
@@ -1137,7 +1240,6 @@ public class C2CEmbedActivity  extends AppCompatActivity {
             return Unit.INSTANCE;
         });
     }
-
 
     private Call.Listener callListener() {
         return new Call.Listener() {
@@ -1164,17 +1266,17 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                  * can use the `SoundPoolManager` to play custom audio files between the
                  * `Call.Listener.onRinging()` and the `Call.Listener.onConnected()` callbacks.
                  */
-                if(chronometer !=null){
+                if (chronometer != null) {
                     chronometer.setBase(SystemClock.elapsedRealtime());
                     chronometer.start();
                 }
-                if (hangUpActionFab != null){
+                if (hangUpActionFab != null) {
                     hangUpActionFab.setEnabled(true);
                 }
-                if (dialPadFab != null){
+                if (dialPadFab != null) {
                     dialPadFab.setEnabled(true);
                 }
-                if (holdActionFab !=null){
+                if (holdActionFab != null) {
                     holdActionFab.setEnabled(true);
                 }
             }
@@ -1192,7 +1294,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     Log.e(TAG, message);
                 }
 //                Toast.makeText(activity, "Connect failure", Toast.LENGTH_SHORT).show();
-                if (callConnectedDialog != null && callConnectedDialog.isShowing()){
+                if (callConnectedDialog != null && callConnectedDialog.isShowing()) {
                     callConnectedDialog.dismiss();
                 }
             }
@@ -1205,12 +1307,13 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     activeCall = call;
                 }
                 Log.d(TAG, "Connected");
-//                Toast.makeText(activity, "Connected", Toast.LENGTH_SHORT).show();
             }
+
             @Override
             public void onReconnecting(@NonNull Call call, @NonNull CallException callException) {
                 Log.d(TAG, "onReconnecting");
             }
+
             @Override
             public void onReconnected(@NonNull Call call) {
                 Log.d(TAG, "onReconnected");
@@ -1232,7 +1335,7 @@ public class C2CEmbedActivity  extends AppCompatActivity {
                     }
                 }
 //                Toast.makeText(activity, "Disconnected", Toast.LENGTH_SHORT).show();
-                if (callConnectedDialog != null && callConnectedDialog.isShowing()){
+                if (callConnectedDialog != null && callConnectedDialog.isShowing()) {
                     callConnectedDialog.dismiss();
                 }
             }
@@ -1266,5 +1369,80 @@ public class C2CEmbedActivity  extends AppCompatActivity {
             }
         };
     }
+
+    public void handleActivityResult(int requestCode, int resultCode, Intent data)  {
+        if (requestCode == REQUEST_CODE_CAPTURE_IMAGE && resultCode == RESULT_OK) {
+            uploadImage(this.imageUri,activity, origin,channelID);
+        }
+
+        if (requestCode == REQUEST_CODE_PICK_IMAGES && resultCode == RESULT_OK) {
+            if (data.getData() != null) {
+                // Single image selected
+                this.imageUri = data.getData();
+                uploadImage(this.imageUri,activity, origin,channelID);
+            }
+        }
+    }
+
+    private void uploadImage(Uri imageUri, Activity activity, String origin, String channelId) {
+        isImageUploaded = false;
+        icon_verified.setVisibility(View.GONE);
+        previewImageTxt.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        new NetworkManager().uploadImageToServer(new NetworkEventListener() {
+            @Override
+            public void OnSuccess(Object object) {
+                ImageUploadResponse imageUploadResponse = ((ImageUploadResponse) object);
+                if (imageUploadResponse.getStatus() == 200) {
+                    imageName = imageUploadResponse.getImageName();
+                    imageFolder = imageUploadResponse.getImageFolder();
+                    isImageUploaded = true;
+                    icon_verified.setVisibility(View.VISIBLE);
+                    previewImageTxt.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                } else {
+                    showError("Error", String.valueOf(imageUploadResponse.getMessage()));
+                }
+            }
+
+            @Override
+            public void OnError(String exception) {
+                showError("Error", "Something went wrong.");
+
+            }
+        },imageUri,activity, origin,channelId,imageName,imageFolder);
+
+    }
+
+    private void deleteImage(String channelId) {
+        if (!isOnline()) {
+            return;
+        }
+
+        new NetworkManager().deleteImage(new NetworkEventListener() {
+            @Override
+            public void OnSuccess(Object object) {
+                SuccessC2C successC2C = ((SuccessC2C) object);
+                if (successC2C.status == 200) {
+                    isImageUploaded = false;
+                    imageFolder = "";
+                    imageName = "";
+                    imageUri = null;
+                    icon_verified.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                    previewImageTxt.setVisibility(View.GONE);
+                } else {
+                    showError("Error", String.valueOf(successC2C.message));
+                }
+            }
+
+            @Override
+            public void OnError(String exception) {
+            }
+        }, channelId,imageFolder,imageName, origin);
+
+
+    }
+
 
 }

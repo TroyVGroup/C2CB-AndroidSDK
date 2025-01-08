@@ -11,10 +11,11 @@ import android.widget.ImageView;
 
 import com.c2cb.androidsdk.pojo.Modes;
 
+
 public class MainActivity extends AppCompatActivity {
     ImageView call_icon, msg_icon, email_icon;
     int ALL_PERMISSIONS = 101;
-    String channelId = "";
+    String channelId = "677e3fcebe93ab507fbbfcd2";
     Modes modes = new Modes();
     C2CVoiceActivity c2cVoiceActivity;
     @Override

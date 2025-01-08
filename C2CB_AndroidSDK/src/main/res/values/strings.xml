@@ -6,4 +6,17 @@
     <string name="decline">Decline</string>
     <string name="callHint">Dial a client name or phone number. Leaving the field empty results in an automated response.</string>
     <string name="select_device">Select Audio Device</string>
+    <!-- In res/values/strings.xml -->
+    <string name="contact_no">Contact no.<font color="#FF0000">*</font></string>
+    <string name="verify">Verify</string>
+    <string name="email">Email*</string>
+    <string name="notes">Note: * denotes a required field</string>
+    <string name="context_option">Context option</string>
+    <string name="first_name">First Name*</string>
+    <string name="last_name">Last Name*</string>
+    <string name="emailOTP">Enter verification code for Email Address</string>
+    <string name="contact_no_OTP">Enter verification code for Contact number</string>
+    <string name="attach_image">Attach File:</string>
+    <string name="enter_msg">Enter message*</string>
+
 </resources>

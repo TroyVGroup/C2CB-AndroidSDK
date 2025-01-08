@@ -1,5 +1,5 @@
-package com.c2cb.androidsdk.pojo;
 
+package com.c2cb.androidsdk.pojo;
 public class C2CAddress {
     public C2CAddressListPojo address;
     public boolean proxy;

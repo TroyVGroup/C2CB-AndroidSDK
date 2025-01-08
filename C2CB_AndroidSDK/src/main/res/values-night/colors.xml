@@ -12,23 +12,18 @@
     <color name="colorAccent">#b0bec5</color>
     <color name="colorButton">#00a6ff</color>
     <color name="colorHint">#8a8a8a</color>
-    <color name="colorBackground">#ffffff</color>
-    <color name="floatingLabelColor">#000000</color>
+    <color name="colorBackground">#404040</color>
+    <color name="colorTransparent">#000000</color>
+    <color name="floatingLabelColor">#ffffff</color>
+    <color name="blue">#00a6ff</color>
 
     <color name="headingColor">#316498</color>
     <color name="bubbleColor">#2d6296</color>
     <color name="editTextColor">#686868</color>
     <color name="editTextBorderColor">#686868</color>
     <color name="chipNbuttonColor">#336699</color>
-    <color name="blacknWhite">#000000</color>
-    <color name="spinnerBackground">#ffffff</color>
-    <color name="greynWhite">#3d3d3d</color>
-    <color name="edittextColor">#FF000000</color>
-    <color name="buttonBlueColor">#225E81</color>
-
-
-
-    <color name="colorTransparent">#00000000</color>
-    <color name="blue">#00a6ff</color>
-
+    <color name="spinnerBackground">#000000</color>
+    <color name="blacknWhite">#ffffff</color>
+    <color name="greynWhite">#ffffff</color>
+    <color name="edittextColor">#FFFFFF</color>
 </resources>

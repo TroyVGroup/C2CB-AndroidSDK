@@ -7,6 +7,8 @@ public class Channel{
     public Emailstats emailstats;
     public Callstats callstats;
     public Preferences preferences;
+
+    public Contexts contexts;
     public ArrayList<Country> countries;
     public String status;
 }

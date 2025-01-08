@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -11,14 +12,14 @@
         android:paddingLeft="10dp"
         android:paddingRight="10dp">
 
-        <TextView
+        <com.c2cb.androidsdk.PoppinsBoldTextView
             android:id="@+id/title_txt_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
-            android:text="Call"
-            android:textColor="@color/white"
+            android:text="Calling Form"
+            android:textColor="@color/bubbleColor"
             android:textSize="20sp"
             android:textStyle="bold" />
 
@@ -47,9 +48,16 @@
             android:id="@+id/details_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:layout_below="@+id/title_txt_view"
             android:orientation="vertical">
+
+            <com.c2cb.androidsdk.PoppinsNormalTextView
+                android:id="@+id/noteTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/notes"
+                android:layout_gravity="end"
+                />
 
             <LinearLayout
                 android:id="@+id/form_layout"
@@ -58,54 +66,59 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/name_layout"
+                    android:id="@+id/email_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_weight="2">
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="3">
 
                     <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginRight="4dp"
                         android:paddingLeft="2dp"
-                        android:background="@drawable/custom_edit_text"
-                        android:layout_weight="1">
+                        android:layout_weight="0.8">
 
-                        <EditText
-                            android:id="@+id/firstNameEditText"
+                        <com.c2cb.androidsdk.FloatingLabelEditText
                             android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:backgroundTint="@color/colorTransparent"
-                            android:hint="First Name"
-                            android:text=""
-                            android:importantForAutofill="no"
+                            android:layout_height="wrap_content"
+                            app:labelText="@string/email"
+                            app:buttonName="@string/verify"
+                            app:labelColor="@color/floatingLabelColor"
+                            android:id="@+id/emailEditText"
                             android:singleLine="true"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/colorHint"
-                            android:textSize="14sp" />
+                            android:importantForAutofill="no"
+                            android:gravity="center_vertical"
+                            />
 
                     </RelativeLayout>
 
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/emailOTPLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
                     <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="4dp"
                         android:paddingLeft="2dp"
-                        android:background="@drawable/custom_edit_text"
-                        android:layout_weight="1">
+                        >
 
-                        <EditText
-                            android:id="@+id/lastNameEditText"
+                        <com.c2cb.androidsdk.FloatingLabelEditText
                             android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:backgroundTint="@color/colorTransparent"
-                            android:hint="Last Name"
-                            android:importantForAutofill="no"
+                            android:layout_height="wrap_content"
+                            app:labelText="@string/emailOTP"
+                            app:labelColor="@color/floatingLabelColor"
+                            android:id="@+id/emailOTPEditText"
                             android:singleLine="true"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/colorHint"
-                            android:textSize="14sp" />
+                            android:importantForAutofill="no"
+                            android:gravity="center_vertical"
+                            android:maxLength="4"
+                            />
 
                     </RelativeLayout>
 
@@ -115,21 +128,39 @@
                     android:id="@+id/number_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
                     android:layout_weight="3">
 
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:layout_marginRight="4dp"
-                        android:background="@drawable/custom_edit_text"
-                        android:layout_weight="0.95">
+                        android:layout_weight="0.95"
+                        android:layout_gravity="end"
+                        >
 
                         <Spinner
                             android:id="@+id/country_spinner"
                             android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:gravity="center" />
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="10dp"
+                            android:background="@drawable/rounded_edittext"
+                            android:gravity="bottom"
+                            />
+
+                        <TextView
+                            android:id="@+id/floating_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Country"
+                            android:textSize="12sp"
+                            android:textColor="@color/floatingLabelColor"
+                            android:visibility="visible"
+                            android:layout_marginStart="20dp"
+                            android:layout_marginTop="1dp"
+                            android:paddingLeft="5dp"
+                            android:paddingRight="5dp"
+                            android:layout_alignParentStart="true"
+                            android:background="@color/colorBackground"/>
 
                     </RelativeLayout>
 
@@ -139,45 +170,22 @@
                         android:layout_marginLeft="4dp"
                         android:layout_marginRight="4dp"
                         android:paddingLeft="2dp"
-                        android:background="@drawable/custom_edit_text"
-                        android:layout_weight="0.95">
+                        android:layout_weight=".4">
 
-                        <EditText
-                            android:id="@+id/numberEditText"
+                        <com.c2cb.androidsdk.FloatingLabelEditText
                             android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:layout_marginLeft="2dp"
-                            android:layout_weight="0.95"
-                            android:backgroundTint="@color/colorTransparent"
-                            android:hint="Contact Number"
+                            android:layout_height="wrap_content"
+                            app:labelText="@string/contact_no"
+                            app:labelColor="@color/floatingLabelColor"
+                            android:id="@+id/numberEditText"
                             android:importantForAutofill="no"
                             android:singleLine="true"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/colorHint"
-                            android:textSize="14sp" />
+                            android:inputType="phone"
+                            android:maxLength="15"
+                            />
 
                     </RelativeLayout>
 
-                    <LinearLayout
-                        android:id="@+id/get_code_layout"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginLeft="4dp"
-                        android:layout_marginRight="2dp"
-                        android:layout_weight="1.2">
-
-                        <Button
-                            android:id="@+id/get_code_button"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_gravity="center_vertical"
-                            android:background="@drawable/custom_button"
-                            android:text="Get Code"
-                            android:textColor="@color/white"
-                            app:strokeColor="@color/white"
-                            app:strokeWidth="2dp" />
-
-                    </LinearLayout>
 
                 </LinearLayout>
 
@@ -185,111 +193,183 @@
                     android:id="@+id/mobileOTPLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp">
+                    android:layout_marginTop="10dp">
 
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
+                    <com.c2cb.androidsdk.FloatingLabelEditText
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingLeft="2dp"
-                        android:background="@drawable/custom_edit_text">
-
-                        <EditText
-                            android:id="@+id/mobileOTPEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:backgroundTint="@color/colorTransparent"
-                            android:hint="Enter OTP"
-                            android:importantForAutofill="no"
-                            android:maxLength="4"
-                            android:singleLine="true"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/colorHint"
-                            android:textSize="14sp"/>
-
-                    </RelativeLayout>
+                        app:labelText="@string/contact_no_OTP"
+                        app:labelColor="@color/floatingLabelColor"
+                        android:id="@+id/mobileOTPEditText"
+                        android:singleLine="true"
+                        android:importantForAutofill="no"
+                        android:maxLength="4"
+                        />
 
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/email_layout"
+                    android:id="@+id/extLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:layout_weight="3">
+                    android:layout_height="50dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/rounded_edittext">
 
-                    <RelativeLayout
+                    <CheckBox
+                        android:id="@+id/extensionChkBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingLeft="2dp"
-                        android:layout_weight="0.8"
-                        android:background="@drawable/custom_edit_text">
+                        android:paddingRight="9dp"
+                        android:layout_marginLeft="5dp"
+                        android:buttonTint="@color/blacknWhite"
+                       />
 
-                        <EditText
-                            android:id="@+id/emailEditText"
-                            android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:layout_marginRight="2dp"
-                            android:layout_weight="0.8"
-                            android:backgroundTint="@color/colorTransparent"
-                            android:hint="Email address"
-                            android:text=""
-                            android:importantForAutofill="no"
-                            android:singleLine="true"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/colorHint"
-                            android:textSize="14sp" />
+<!--                    android:button="@drawable/custom_checkbox"-->
+<!--                    android:layout_marginLeft="15dp"-->
+<!--                    android:checked="false"-->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="|"
+                        android:textSize="30sp"
+                        android:layout_gravity="top"/>
 
-                    </RelativeLayout>
+                    <com.c2cb.androidsdk.PoppinsEditTextView
+                        android:id="@+id/extensionEditTxt"
+                        android:layout_width="0dp"
+                        android:layout_height="45dp"
+                        android:layout_weight="1"
+                        android:hint="Enter extension here (optional)"
+                        android:background="@null"
+                        android:textColor="@color/editTextColor"
+                        android:textColorHint="@android:color/darker_gray"
+                        android:layout_marginStart="8dp"
+                        android:padding="12dp"
+                        android:textSize="14sp"
+                        android:inputType="phone"
+                        android:maxLength="10"/>
+                </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/verify_email_layout"
+
+                <LinearLayout
+                    android:id="@+id/name_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="2">
+
+                    <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:layout_marginRight="4dp"
+                        android:paddingLeft="2dp"
+                        android:layout_weight="1">
+
+                        <com.c2cb.androidsdk.FloatingLabelEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:labelText="@string/first_name"
+                            app:labelColor="@color/floatingLabelColor"
+                            android:id="@+id/firstNameEditText"
+                            android:importantForAutofill="no"
+                            android:singleLine="true"
+                            />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_marginLeft="4dp"
-                        android:layout_marginRight="2dp"
-                        android:layout_weight="2.2"
-                        android:gravity="right">
+                        android:paddingLeft="2dp"
+                        android:layout_weight="1">
 
-                        <Button
-                            android:id="@+id/verifyEmailOtpButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:layout_gravity="center_vertical"
-                            android:background="@drawable/custom_button"
-                            android:text="Verify"
-                            android:textColor="@color/white"
-                            app:strokeColor="@color/white"
-                            app:strokeWidth="2dp" />
+                        <com.c2cb.androidsdk.FloatingLabelEditText
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:labelText="@string/last_name"
+                            app:labelColor="@color/floatingLabelColor"
+                            android:id="@+id/lastNameEditText"
+                            android:importantForAutofill="no"
+                            android:singleLine="true"
+                            />
 
-                    </LinearLayout>
+                    </RelativeLayout>
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/emailOTPLayout"
+                <RelativeLayout
+                    android:id="@+id/bubbleLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:orientation="horizontal">
+                    android:layout_marginTop="15dp">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_edittext"
+                        android:layout_marginTop="10dp"
+                        android:minHeight="45dp">
+
+                        <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chip_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:padding="5dp"
+                            android:layout_marginLeft="15dp"
+                            android:layout_marginRight="15dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"/>
+
+                    </RelativeLayout>
+
+                    <com.c2cb.androidsdk.PoppinsNormalTextView
+                        android:id="@+id/context_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/context_option"
+                        android:textSize="12sp"
+                        android:textColor="@color/floatingLabelColor"
+                        android:visibility="visible"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="1dp"
+                        android:paddingLeft="5dp"
+                        android:paddingRight="5dp"
+                        android:layout_alignParentStart="true"
+                        android:background="@color/colorBackground"/>
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:id="@+id/subjectLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="vertical"
+                    android:visibility="visible">
 
                     <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:paddingLeft="2dp"
-                        android:background="@drawable/custom_edit_text">
+                        >
 
-                        <EditText
-                            android:id="@+id/emailOTPEditText"
+                        <com.c2cb.androidsdk.FloatingLabelEditText
                             android:layout_width="match_parent"
-                            android:layout_height="45sp"
-                            android:backgroundTint="@color/colorTransparent"
-                            android:hint="Enter OTP"
-                            android:importantForAutofill="no"
-                            android:maxLength="4"
+                            android:layout_height="wrap_content"
+                            app:labelText="Subject"
+                            app:labelColor="@color/floatingLabelColor"
+                            android:id="@+id/subjectEditText"
                             android:singleLine="true"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/colorHint"
-                            android:textSize="14sp"/>
+                            android:importantForAutofill="no"
+                            android:gravity="center_vertical"
+                            android:maxLength="160"
+                            android:lines="1"
+                            android:inputType="textMultiLine"
+                            />
 
                     </RelativeLayout>
 
@@ -301,31 +381,29 @@
                 android:id="@+id/messageLayout"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical">
+                android:layout_marginTop="10dp"
+                android:orientation="vertical"
+                >
 
                 <RelativeLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingLeft="2dp"
-                    android:background="@drawable/custom_edit_text">
+                    android:paddingLeft="2dp">
 
-                    <EditText
+                    <com.c2cb.androidsdk.FloatingMessageEditTxt
                         android:id="@+id/messageEditText"
                         android:layout_width="match_parent"
                         android:layout_height="120dp"
                         android:gravity="top"
-                        android:hint="Enter message"
+                        app:labelText="@string/enter_msg"
+                        app:labelColor="@color/floatingLabelColor"
+                        android:singleLine="false"
                         android:importantForAutofill="no"
-                        android:inputType="textMultiLine"
+                        android:maxLength="160"
                         android:lines="5"
+                        android:inputType="textMultiLine"
                         android:textSize="14sp"
-                        android:backgroundTint="@color/colorTransparent"
-                        android:padding="10dp"
-                        android:text=""
-                        android:textColor="@color/black"
-                        android:textColorHint="@color/colorHint"
-                        android:maxLength="160"/>
+                        android:minHeight="120dp" />
 
                 </RelativeLayout>
 
@@ -344,6 +422,72 @@
                 android:textSize="14sp"
                 android:visibility="gone"
                 />
+
+            <LinearLayout
+                android:id="@+id/attachLayout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="12dp">
+
+                <com.c2cb.androidsdk.PoppinsNormalTextView
+                    android:id="@+id/attach_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/attach_image"
+                    android:textSize="16sp"
+                    android:paddingStart="8dp"
+                    android:textColor="@color/blacknWhite"
+                    android:paddingEnd="8dp"/>
+
+                <ImageView
+                    android:id="@+id/icon_attach"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/gallery"
+                    android:padding="5dp"
+                    />
+
+                <com.c2cb.androidsdk.PoppinsNormalTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="or"
+                    android:textSize="16sp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textColor="@color/blacknWhite"/>
+
+                <ImageView
+                    android:id="@+id/icon_camera"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:src="@drawable/camera"
+                    android:padding="5dp"
+                    />
+
+                <ImageView
+                    android:id="@+id/icon_verified"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@drawable/verified_icon"
+                    android:padding="5dp"
+                    android:layout_marginLeft="5dp"
+                    android:visibility="gone"
+                    />
+                <com.c2cb.androidsdk.PoppinsNormalTextView
+                    android:id="@+id/previewImageTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Preview Image"
+                    android:textSize="16sp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:textColor="@color/blacknWhite"/>
+
+            </LinearLayout>
+
+
         </LinearLayout>
 
         <RelativeLayout
@@ -351,7 +495,6 @@
             android:layout_width="wrap_content"
             android:layout_height="45dp"
             android:layout_below="@+id/details_layout"
-            android:layout_marginTop="15dp"
             android:orientation="horizontal">
 
             <CheckBox
@@ -359,66 +502,61 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
-                android:buttonTint="#00a6ff"
-                android:checked="false" />
+                android:buttonTint="@color/blacknWhite"
+                android:paddingRight="9dp"
+                android:layout_marginLeft="5dp"
+                android:checked="false"/>
 
-            <TextView
+            <com.c2cb.androidsdk.PoppinsNormalTextView
                 android:id="@+id/Terms_and_condition_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginLeft="3dp"
                 android:layout_gravity="center"
                 android:gravity="center_vertical"
                 android:layout_toRightOf="@+id/accept_terms_and_conditions"
                 android:text="I agree to the terms and conditions"
-                android:textColor="@color/white"
+                android:textColor="@color/greynWhite"
                 android:textSize="15sp" />
 
         </RelativeLayout>
 
-        <Button
-            android:id="@+id/connectButton"
-            android:layout_width="wrap_content"
+        <com.c2cb.androidsdk.PoppinsBoldTextView
+            android:id="@+id/connectTxt"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/checkbox_Layout"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="0dp"
-            android:background="@drawable/custom_button"
             android:text="Connect"
+            android:textSize="18sp"
             android:textColor="@color/white"
-            app:strokeColor="@color/white"
-            app:strokeWidth="2dp" />
+            android:layout_below="@+id/checkbox_Layout"
+            android:background="@drawable/edit_button"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/connectButton"
+            android:layout_height="30dp"
+            android:layout_below="@+id/connectTxt"
             android:gravity="center"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp">
 
-            <TextView
+            <com.c2cb.androidsdk.PoppinsNormalTextView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
                 android:text="Powered by: "
-                android:textColor="@color/white"
-                android:textSize="14sp" />
+                android:textColor="@color/greynWhite"
+                android:textSize="14sp"
+                android:gravity="center_vertical"/>
 
-            <TextView
-                android:id="@+id/poweredByTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="20dp"
-                android:text="contexttocall.com"
-                android:textColor="#00a6ff"
-                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/poweredByImgView"
+                android:layout_width="60dp"
+                android:layout_height="25dp"
+                android:background="@drawable/contexttocalllogo"/>
 
         </LinearLayout>
 

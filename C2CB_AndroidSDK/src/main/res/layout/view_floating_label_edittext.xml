@@ -1,0 +1,54 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="6dp">
+
+        <!-- EditText with Rounded Border -->
+        <com.c2cb.androidsdk.PoppinsEditTextView
+            android:id="@+id/edit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_edittext"
+            android:gravity="center_vertical|start"
+            android:hint="Hello"
+            android:padding="12dp"
+            android:textSize="14sp" />
+
+        <com.c2cb.androidsdk.PoppinsBoldTextView
+            android:id="@+id/txtButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:background="@drawable/edit_button"
+            android:gravity="center_vertical"
+            android:paddingLeft="20dp"
+            android:paddingTop="2dp"
+            android:paddingRight="20dp"
+            android:layout_marginBottom="2dp"
+            android:text="Verify"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+
+    <!-- Floating Label -->
+    <com.c2cb.androidsdk.PoppinsNormalTextView
+        android:id="@+id/floating_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="0dp"
+        android:background="@color/colorBackground"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp"
+        android:text="@string/email"
+        android:textColor="@color/floatingLabelColor"
+        android:textSize="12sp"
+        android:visibility="visible" />
+
+</RelativeLayout>

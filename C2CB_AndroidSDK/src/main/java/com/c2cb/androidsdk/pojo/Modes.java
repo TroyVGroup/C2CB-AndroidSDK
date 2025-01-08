@@ -1,11 +1,13 @@
 package com.c2cb.androidsdk.pojo;
 
+
+
 public class Modes {
     public String response;
     public Channel channel;
+
     public Object message;
     public int status;
-
     public Channel getChannel() {
         return channel;
     }

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -88,7 +89,7 @@ public class C2CVoiceActivity extends AppCompatActivity {
         }catch (Exception e){
             e.printStackTrace();
         }
-        c2CEmbedActivity = new C2CEmbedActivity(activity,origin);
+        c2CEmbedActivity = new C2CEmbedActivity(this.activity,"com.te.android");
     }
 
     public void getModes(@NotNull String channelId, @NotNull Modes modes, @org.jetbrains.annotations.Nullable ImageView callIcon, @org.jetbrains.annotations.Nullable ImageView msgIcon, @org.jetbrains.annotations.Nullable ImageView emailIcon) {
@@ -109,5 +110,11 @@ public class C2CVoiceActivity extends AppCompatActivity {
         }
     }
 
-
+    public void handleActivityResult(int requestCode, int resultCode, @org.jetbrains.annotations.Nullable Intent data) {
+        try {
+            c2CEmbedActivity.handleActivityResult(requestCode,resultCode,data);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
 }

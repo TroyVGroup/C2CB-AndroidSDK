@@ -30,5 +30,10 @@ public class C2CConstants {
     public static final String SEND_EMAIL = "/utilities/mail/ur/send/mail";
     public static final String GEOCODE = "https://api.radar.io/v1/geocode/ip";
     public static final String IMAGES = "/product/channel/ur/";
+    public static final String UPLOAD_IMAGES = "/utilities/twilio/ur/upload/image";
+    public static final String DELETE_IMAGE = "/utilities/twilio/ur/delete/image";
 
+    public static  final String CALL_Form = "Calling Form";
+    public static  final String EMAIL_Form = "Email Form";
+    public static  final String SMS_Form = "SMS Form";
 }

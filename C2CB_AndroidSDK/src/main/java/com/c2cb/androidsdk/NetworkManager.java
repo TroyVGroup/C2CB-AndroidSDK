@@ -1,16 +1,20 @@
 package com.c2cb.androidsdk;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.c2cb.androidsdk.pojo.C2CAddress;
 import com.c2cb.androidsdk.pojo.CallPojo;
+import com.c2cb.androidsdk.pojo.ImageUploadResponse;
 import com.c2cb.androidsdk.pojo.Modes;
 import com.c2cb.androidsdk.pojo.SuccessC2C;
 import com.c2cb.androidsdk.pojo.TokenPojo;
@@ -25,7 +29,9 @@ import java.util.Map;
 
 public class NetworkManager {
 
-    public static final String BASE_URL = "https://c2c-uatapi.contexttocall.com/uat_c2c";
+
+    public static final String BASE_URL = "https://apis.contexttocall.com/c2c";
+
     public void getModes(final NetworkEventListener listener, String channelId, String c2cPackage, ImageView call_icon, ImageView msg_icon, ImageView email_icon) {
         String url = C2CConstants.CHANNEL_MODES + channelId;
         HashMap<String, String> headers = new HashMap<>();
@@ -301,4 +307,57 @@ public class NetworkManager {
         });
         requestHttp.execute();
     }
+    public void uploadImageToServer(NetworkEventListener listener, Uri imageUri, Activity activity, String c2cPackage, String channelID, String imageName, String imageFolder) {
+        String url = C2CConstants.UPLOAD_IMAGES+ "?channelId=" + channelID + (TextUtils.isEmpty(imageFolder) ?"": "&imageFolder="+imageFolder+"&imageName="+imageName);
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("request-package", c2cPackage);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("channelid", channelID);
+
+        JSONObject obj = new JSONObject(data);
+        HTTPRequestC2C requestHttp = new HTTPRequestC2C(url, Method.IMAGE_UPLOAD, headers, ImageUploadResponse.class, imageUri,activity,obj.toString(),new HTTPCallback() {
+            @Override
+            public void processFinish(Object obj) {
+                listener.OnSuccess((ImageUploadResponse) obj);
+            }
+
+            @Override
+            public void processFailed(int responseCode, String output) {
+                Log.e("Response Failed", Integer.toString(responseCode) + " - " + output);
+            }
+        });
+        requestHttp.execute();
+
+    }
+
+
+    public void deleteImage(NetworkEventListener listener, String channelId, String imageFolder, String imageName, String c2cPackage) {
+
+        String url = C2CConstants.DELETE_IMAGE;
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put("request-package", c2cPackage);
+        headers.put("Content-Type","application/json");
+        headers.put("Accept", "application/json");
+
+        Map<String, String> data = new HashMap<>();
+        data.put("channelId", channelId);
+        data.put("imageFolder", imageFolder);
+        data.put("imageName", imageName);
+
+        JSONObject obj = new JSONObject(data);
+        HTTPRequestC2C requestHttp = new HTTPRequestC2C(url, obj.toString(), Method.POST, headers,SuccessC2C.class, new HTTPCallback() {
+            @Override
+            public void processFinish(Object obj) {
+                listener.OnSuccess((SuccessC2C) obj);
+            }
+            @Override
+            public void processFailed(int responseCode, String output) {
+                Log.e("Response Failed", Integer.toString(responseCode) + " - " + output);
+            }
+        });
+        requestHttp.execute();
+
+    }
+
 }

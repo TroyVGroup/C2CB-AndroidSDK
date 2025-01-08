@@ -11,9 +11,85 @@ public class InitiateC2C {
     private String numotp;
     private String mailotp;
     private String countrycode;
-
     private String latLong;
+    private String extension;
 
+
+    public String getFname() {
+        return fname;
+    }
+
+    public void setFname(String fname) {
+        this.fname = fname;
+    }
+
+    public String getLname() {
+        return lname;
+    }
+
+    public void setLname(String lname) {
+        this.lname = lname;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public void setExtension(String extension) {
+        this.extension = extension;
+    }
+
+    private String fname;
+    private String lname;
+    private String imageFolder;
+
+    public String getImageFolder() {
+        return imageFolder;
+    }
+
+    public void setImageFolder(String imageFolder) {
+        this.imageFolder = imageFolder;
+    }
+
+    public String getImageName() {
+        return imageName;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    private String imageName;
+
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    private String subject;
+
+
+//    {
+//        "channelId": "string",
+//            "countrycode": "string",
+//            "email": "string",
+//            "fname": "string",
+//            "imageFolder": "string",
+//            "imageName": "string",
+//            "lname": "string",
+//            "mailotp": "string",
+//            "message": "string",
+//            "name": "string",
+//            "number": "string",
+//            "numotp": "string",
+//            "saveContact": true,
+//            "subject": "string",
+//            "userId": "string"
+//    }
     public String getChannelId() {
         return channelId;
     }
