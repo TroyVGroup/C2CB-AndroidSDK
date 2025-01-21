@@ -9,7 +9,7 @@
         android:background="@drawable/rounded_edittext">
 
         <!-- EditText with Rounded Border -->
-        <com.c2cb.androidsdk.PoppinsEditTextView
+        <com.c2cb.androidsdk.view.PoppinsEditTextView
             android:id="@+id/edit_text"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -28,7 +28,7 @@
 
 
     <!-- Floating Label -->
-    <com.c2cb.androidsdk.PoppinsNormalTextView
+    <com.c2cb.androidsdk.view.PoppinsNormalTextView
         android:id="@+id/floating_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

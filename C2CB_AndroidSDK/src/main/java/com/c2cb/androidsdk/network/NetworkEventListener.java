@@ -1,4 +1,4 @@
-package com.c2cb.androidsdk;
+package com.c2cb.androidsdk.network;
 
 
 public interface NetworkEventListener {

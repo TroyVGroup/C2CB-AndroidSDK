@@ -1,4 +1,4 @@
-package com.c2cb.androidsdk;
+package com.c2cb.androidsdk.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -19,6 +19,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.c2cb.androidsdk.R;
 
 public class FloatingMessageEditTxt extends RelativeLayout {
 

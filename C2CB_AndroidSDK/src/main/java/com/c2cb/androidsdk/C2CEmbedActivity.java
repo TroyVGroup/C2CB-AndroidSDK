@@ -40,7 +40,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Chronometer;
 import android.widget.CompoundButton;
@@ -51,16 +50,12 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.c2cb.androidsdk.pojo.C2CAddress;
-import com.c2cb.androidsdk.pojo.Country;
-import com.c2cb.androidsdk.pojo.ImageUploadResponse;
-import com.c2cb.androidsdk.pojo.InitiateC2C;
-import com.c2cb.androidsdk.pojo.Modes;
-import com.c2cb.androidsdk.pojo.SuccessC2C;
-import com.c2cb.androidsdk.pojo.TokenPojo;
-import com.c2cb.androidsdk.pojo.ValidateOTP;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.gson.Gson;
@@ -69,6 +64,22 @@ import com.twilio.voice.Call;
 import com.twilio.voice.CallException;
 import com.twilio.voice.ConnectOptions;
 import com.twilio.voice.Voice;
+import com.c2cb.androidsdk.call_back.ButtonCallBack;
+import com.c2cb.androidsdk.network.NetworkEventListener;
+import com.c2cb.androidsdk.network.NetworkManager;
+import com.c2cb.androidsdk.pojo.C2CAddress;
+import com.c2cb.androidsdk.pojo.Country;
+import com.c2cb.androidsdk.pojo.ImageUploadResponse;
+import com.c2cb.androidsdk.pojo.InitiateC2C;
+import com.c2cb.androidsdk.pojo.Modes;
+import com.c2cb.androidsdk.pojo.SuccessC2C;
+import com.c2cb.androidsdk.pojo.TokenPojo;
+import com.c2cb.androidsdk.pojo.ValidateOTP;
+import com.c2cb.androidsdk.view.FloatingLabelEditText;
+import com.c2cb.androidsdk.view.FloatingMessageEditTxt;
+import com.c2cb.androidsdk.view.PoppinsBoldTextView;
+import com.c2cb.androidsdk.view.PoppinsEditTextView;
+import com.c2cb.androidsdk.view.PoppinsNormalTextView;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -78,14 +89,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import kotlin.Unit;
-
-
-public class C2CEmbedActivity  extends AppCompatActivity {
+public class C2CEmbedActivity extends AppCompatActivity {
     private Activity activity;
     private String origin;
     public static final String TAG = "C2C";
@@ -133,11 +138,13 @@ public class C2CEmbedActivity  extends AppCompatActivity {
             @Override
             public void OnSuccess(Object object) {
                 Modes modes1 = ((Modes) object);
-                if (modes1.status == 200) {
+                if (modes1.status == 200 && TextUtils.isEmpty(modes1.getChannel().versionerror)) {
                     modes.setStatus(modes1.status);
                     modes.setMessage(modes1.message);
                     modes.setResponse(modes1.response);
                     modes.setChannel(modes1.channel);
+                } else if(!TextUtils.isEmpty(modes1.getChannel().versionerror)){
+                    showError("Message", modes1.getChannel().versionerror);
                 } else {
                     showError("Error", String.valueOf(modes1.message));
                 }
@@ -146,23 +153,8 @@ public class C2CEmbedActivity  extends AppCompatActivity {
 
             @Override
             public void OnError(String exception) {
-                Log.d("error getting points","error getting points");
             }
         }, channelId, origin, call_icon, msg_icon, email_icon);
-    }
-
-    public void handleActivityResult(int requestCode, int resultCode, Intent data)  {
-        if (requestCode == REQUEST_CODE_CAPTURE_IMAGE && resultCode == RESULT_OK) {
-            uploadImage(this.imageUri,activity, origin,channelID);
-        }
-
-        if (requestCode == REQUEST_CODE_PICK_IMAGES && resultCode == RESULT_OK) {
-            if (data.getData() != null) {
-                // Single image selected
-                this.imageUri = data.getData();
-                uploadImage(this.imageUri,activity, origin,channelID);
-            }
-        }
     }
 
     public void getIP() {
@@ -196,147 +188,147 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         }
 
 
-        Dialog dialog = new Dialog(activity);
-        dialog.setContentView(R.layout.popup_dialog);
-        Window window = dialog.getWindow();
-        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                WindowManager.LayoutParams.WRAP_CONTENT);
-        ArrayList<String> countries = new ArrayList<>();
-        countries.add("Select Country");
-        int currentCountry = -1, countNo = 0;
-        for (Country country : modes.channel.countries) {
-            countries.add(country.code + " " + country.country);
-            if (c2CAddress != null) {
-                if (country.country.equalsIgnoreCase(c2CAddress.address.country)) {
+            Dialog dialog = new Dialog(activity);
+            dialog.setContentView(R.layout.popup_dialog);
+            Window window = dialog.getWindow();
+            window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT);
+            ArrayList<String> countries = new ArrayList<>();
+            countries.add("Select Country");
+            int currentCountry = -1, countNo = 0;
+            for (Country country : modes.channel.countries) {
+                countries.add(country.code + " " + country.country);
+                if (c2CAddress != null) {
+                    if (country.country.equalsIgnoreCase(c2CAddress.address.country)) {
 
-                    currentCountry = countNo;
+                        currentCountry = countNo;
+                    }
                 }
+                countNo++;
             }
-            countNo++;
-        }
-        Spinner countrySpinner = dialog.findViewById(R.id.country_spinner);
-        ArrayAdapter countryAdapter = new ArrayAdapter(
-                activity, R.layout.c2cspinner,
-                countries
-        );
+            Spinner countrySpinner = dialog.findViewById(R.id.country_spinner);
+            ArrayAdapter countryAdapter = new ArrayAdapter(
+                    activity, R.layout.c2cspinner,
+                    countries
+            );
 
-        countryAdapter.setDropDownViewResource(R.layout.c2cspinner_dropdown);
-        countrySpinner.setAdapter(countryAdapter);
-        final String[] selectedCountry = {""};
-        if (currentCountry > 0) {
-            countrySpinner.setSelection(currentCountry + 1);
-        }
-        countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                                       int pos, long id) {
-                if (pos > 0) {
-                    selectedCountry[0] = countries.get(pos);
-                } else {
+            countryAdapter.setDropDownViewResource(R.layout.c2cspinner_dropdown);
+            countrySpinner.setAdapter(countryAdapter);
+            final String[] selectedCountry = {""};
+            if (currentCountry > 0) {
+                countrySpinner.setSelection(currentCountry + 1);
+            }
+            countrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                           int pos, long id) {
+                    if (pos > 0) {
+                        selectedCountry[0] = countries.get(pos);
+                    } else {
+                        selectedCountry[0] = "";
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> arg0) {
                     selectedCountry[0] = "";
-                }
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                selectedCountry[0] = "";
-
-            }
-        });
-
-        TextView titleTextView = dialog.findViewById(R.id.title_txt_view);
-        LinearLayout extLayout = dialog.findViewById(R.id.extLayout);
-        PoppinsNormalTextView noteTextView = dialog.findViewById(R.id.noteTextView);
-        PoppinsNormalTextView context_label = dialog.findViewById(R.id.context_label);
-        FloatingLabelEditText firstNameEdittxt = dialog.findViewById(R.id.firstNameEditText);
-        FloatingLabelEditText lastNameEdittxt = dialog.findViewById(R.id.lastNameEditText);
-        FloatingLabelEditText numberEdittxt = dialog.findViewById(R.id.numberEditText);
-        FloatingLabelEditText mobileOTPEditText = dialog.findViewById(R.id.mobileOTPEditText);
-        FloatingLabelEditText emailOTPEditText = dialog.findViewById(R.id.emailOTPEditText);
-        FloatingLabelEditText emailEditText = dialog.findViewById(R.id.emailEditText);
-        PoppinsEditTextView extensionEditTxt = dialog.findViewById(R.id.extensionEditTxt);
-
-        LinearLayout nameLayout = dialog.findViewById(R.id.name_layout);
-        LinearLayout numberLayout = dialog.findViewById(R.id.number_layout);
-        LinearLayout mobileOTPLayout = dialog.findViewById(R.id.mobileOTPLayout);
-        LinearLayout emailLayout = dialog.findViewById(R.id.email_layout);
-        LinearLayout emailOTPLayout = dialog.findViewById(R.id.emailOTPLayout);
-        LinearLayout detailsLayout = dialog.findViewById(R.id.details_layout);
-        LinearLayout messageLayout = dialog.findViewById(R.id.messageLayout);
-        LinearLayout subjectLayout = dialog.findViewById(R.id.subjectLayout);
-        LinearLayout attachLayout = dialog.findViewById(R.id.attachLayout);
-        TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
-        ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
-        ImageView icon_attach = dialog.findViewById(R.id.icon_attach);
-        ImageView icon_camera = dialog.findViewById(R.id.icon_camera);
-        icon_verified = dialog.findViewById(R.id.icon_verified);
-        CheckBox termsCheckBox = dialog.findViewById(R.id.accept_terms_and_conditions);
-        CheckBox extensionChkBox = dialog.findViewById(R.id.extensionChkBox);
-        PoppinsBoldTextView connectTxt = dialog.findViewById(R.id.connectTxt);
-        FloatingMessageEditTxt messageEditText = dialog.findViewById(R.id.messageEditText);
-        FloatingLabelEditText subjectEditText = dialog.findViewById(R.id.subjectEditText);
-        TextView termsTextView = dialog.findViewById(R.id.Terms_and_condition_text);
-        previewImageTxt = dialog.findViewById(R.id.previewImageTxt);
-        previewImageTxt.setVisibility(View.GONE);
-        progressBar = dialog.findViewById(R.id.progressBar);
-        ImageView poweredByImgView = dialog.findViewById(R.id.poweredByImgView);
-        ChipGroup chipGroup = dialog.findViewById(R.id.chip_group);
-        TextView count = dialog.findViewById(R.id.count);
-        RelativeLayout bubbleLayout = dialog.findViewById(R.id.bubbleLayout);
-
-        setSpannableText(noteTextView,activity.getString(R.string.notes));
-        if(modes.channel.preferences.isContextMandatory(id) ){
-            setSpannableText(context_label,activity.getString(R.string.context_option)+"*");
-        }else {
-            setSpannableText(context_label,activity.getString(R.string.context_option));
-        }
-        if(modes.channel.preferences.isVerifycontact(id) && id == C2CConstants.CALL ){
-            extLayout.setVisibility(View.VISIBLE);
-        }else {
-            extLayout.setVisibility(View.GONE);
-        }
-        if(modes.channel.preferences.isUploadImageMandatory(id) ){
-            setSpannableText(dialog.findViewById(R.id.attach_label),activity.getString(R.string.attach_image)+"*");
-        }else {
-            setSpannableText(dialog.findViewById(R.id.attach_label),activity.getString(R.string.attach_image));
-        }
-        if(modes.channel.preferences.isBubbleRequired(id) ){
-            bubbleLayout.setVisibility(View.VISIBLE);
-        }else {
-            bubbleLayout.setVisibility(View.GONE);
-        }
-
-        if (id == C2CConstants.CALL) {
-            titleTextView.setText(C2CConstants.CALL_Form);
-        } else if (id == C2CConstants.EMAIL) {
-            titleTextView.setText(C2CConstants.EMAIL_Form);
-        } else {
-            titleTextView.setText(C2CConstants.SMS_Form);
-        }
-
-        icon_attach.setColorFilter(activity.getResources().getColor(R.color.bubbleColor));
-        icon_camera.setColorFilter(activity.getResources().getColor(R.color.bubbleColor));
-        messageEditText.setHeight(120);
-
-        if (id == C2CConstants.SMS) {
-            count.setVisibility(View.VISIBLE);
-            messageEditText.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    count.setText(s.toString().length() + "/160");
                 }
             });
-        }
+
+            TextView titleTextView = dialog.findViewById(R.id.title_txt_view);
+            LinearLayout extLayout = dialog.findViewById(R.id.extLayout);
+            PoppinsNormalTextView noteTextView = dialog.findViewById(R.id.noteTextView);
+            PoppinsNormalTextView context_label = dialog.findViewById(R.id.context_label);
+            FloatingLabelEditText firstNameEdittxt = dialog.findViewById(R.id.firstNameEditText);
+            FloatingLabelEditText lastNameEdittxt = dialog.findViewById(R.id.lastNameEditText);
+            FloatingLabelEditText numberEdittxt = dialog.findViewById(R.id.numberEditText);
+            FloatingLabelEditText mobileOTPEditText = dialog.findViewById(R.id.mobileOTPEditText);
+            FloatingLabelEditText emailOTPEditText = dialog.findViewById(R.id.emailOTPEditText);
+            FloatingLabelEditText emailEditText = dialog.findViewById(R.id.emailEditText);
+            PoppinsEditTextView extensionEditTxt = dialog.findViewById(R.id.extensionEditTxt);
+
+            LinearLayout nameLayout = dialog.findViewById(R.id.name_layout);
+            LinearLayout numberLayout = dialog.findViewById(R.id.number_layout);
+            LinearLayout mobileOTPLayout = dialog.findViewById(R.id.mobileOTPLayout);
+            LinearLayout emailLayout = dialog.findViewById(R.id.email_layout);
+            LinearLayout emailOTPLayout = dialog.findViewById(R.id.emailOTPLayout);
+            LinearLayout detailsLayout = dialog.findViewById(R.id.details_layout);
+            LinearLayout messageLayout = dialog.findViewById(R.id.messageLayout);
+            LinearLayout subjectLayout = dialog.findViewById(R.id.subjectLayout);
+            LinearLayout attachLayout = dialog.findViewById(R.id.attachLayout);
+            TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
+            ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
+            ImageView icon_attach = dialog.findViewById(R.id.icon_attach);
+            ImageView icon_camera = dialog.findViewById(R.id.icon_camera);
+            icon_verified = dialog.findViewById(R.id.icon_verified);
+            CheckBox termsCheckBox = dialog.findViewById(R.id.accept_terms_and_conditions);
+            CheckBox extensionChkBox = dialog.findViewById(R.id.extensionChkBox);
+            PoppinsBoldTextView connectTxt = dialog.findViewById(R.id.connectTxt);
+            FloatingMessageEditTxt messageEditText = dialog.findViewById(R.id.messageEditText);
+            FloatingLabelEditText subjectEditText = dialog.findViewById(R.id.subjectEditText);
+            TextView termsTextView = dialog.findViewById(R.id.Terms_and_condition_text);
+            previewImageTxt = dialog.findViewById(R.id.previewImageTxt);
+            previewImageTxt.setVisibility(View.GONE);
+            progressBar = dialog.findViewById(R.id.progressBar);
+            ImageView poweredByImgView = dialog.findViewById(R.id.poweredByImgView);
+            ChipGroup chipGroup = dialog.findViewById(R.id.chip_group);
+            TextView count = dialog.findViewById(R.id.count);
+            RelativeLayout bubbleLayout = dialog.findViewById(R.id.bubbleLayout);
+
+            setSpannableText(noteTextView,activity.getString(R.string.notes));
+            if(modes.channel.preferences.isContextMandatory(id) ){
+                setSpannableText(context_label,activity.getString(R.string.context_option)+"*");
+            }else {
+                setSpannableText(context_label,activity.getString(R.string.context_option));
+            }
+            if(modes.channel.preferences.isVerifycontact(id) && id == C2CConstants.CALL ){
+                extLayout.setVisibility(View.VISIBLE);
+            }else {
+                extLayout.setVisibility(View.GONE);
+            }
+            if(modes.channel.preferences.isUploadImageMandatory(id) ){
+                setSpannableText(dialog.findViewById(R.id.attach_label),activity.getString(R.string.attach_image)+"*");
+            }else {
+                setSpannableText(dialog.findViewById(R.id.attach_label),activity.getString(R.string.attach_image));
+            }
+            if(modes.channel.preferences.isBubbleRequired(id) ){
+                bubbleLayout.setVisibility(View.VISIBLE);
+            }else {
+                bubbleLayout.setVisibility(View.GONE);
+            }
+
+            if (id == C2CConstants.CALL) {
+                titleTextView.setText(C2CConstants.CALL_Form);
+            } else if (id == C2CConstants.EMAIL) {
+                titleTextView.setText(C2CConstants.EMAIL_Form);
+            } else {
+                titleTextView.setText(C2CConstants.SMS_Form);
+            }
+
+            icon_attach.setColorFilter(activity.getResources().getColor(R.color.bubbleColor));
+            icon_camera.setColorFilter(activity.getResources().getColor(R.color.bubbleColor));
+            messageEditText.setHeight(120);
+
+            if (id == C2CConstants.SMS) {
+                count.setVisibility(View.VISIBLE);
+                messageEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        count.setText(s.toString().length() + "/160");
+                    }
+                });
+            }
 
         extensionChkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -391,383 +383,383 @@ public class C2CEmbedActivity  extends AppCompatActivity {
 
         });
 
-        SpannableString ss = new SpannableString("I agree to the terms and conditions");
+            SpannableString ss = new SpannableString("I agree to the terms and conditions");
 
-        ClickableSpan clickableSpan = new ClickableSpan() {
-            @Override
-            public void onClick(@NonNull View view) {
-                Dialog dialog = new Dialog(activity);
-                dialog.setContentView(R.layout.web_view_popup);
-                Window window = dialog.getWindow();
-                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT);
+            ClickableSpan clickableSpan = new ClickableSpan() {
+                @Override
+                public void onClick(@NonNull View view) {
+                    Dialog dialog = new Dialog(activity);
+                    dialog.setContentView(R.layout.web_view_popup);
+                    Window window = dialog.getWindow();
+                    window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                            WindowManager.LayoutParams.WRAP_CONTENT);
 
-                WebView webView = dialog.findViewById(R.id.webview);
-                ProgressBar progressBarWebView = dialog.findViewById(R.id.progressBar);
-                TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
+                    WebView webView = dialog.findViewById(R.id.webview);
+                    ProgressBar progressBarWebView = dialog.findViewById(R.id.progressBar);
+                    TextView cancelTextView = dialog.findViewById(R.id.cancelTextView);
 
-                webView.getSettings().setLoadsImagesAutomatically(true);
-                webView.getSettings().setJavaScriptEnabled(true);
-                WebSettings settings = webView.getSettings();
-                settings.setDomStorageEnabled(true);
-                webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
-                webView.setWebChromeClient(new WebChromeClient() {
-                    public void onProgressChanged(WebView view, int progress) {
-                        progressBarWebView.setVisibility(View.VISIBLE);
-                        if (progress == 100) {
-                            progressBarWebView.setVisibility(View.GONE);
+                    webView.getSettings().setLoadsImagesAutomatically(true);
+                    webView.getSettings().setJavaScriptEnabled(true);
+                    WebSettings settings = webView.getSettings();
+                    settings.setDomStorageEnabled(true);
+                    webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
+                    webView.setWebChromeClient(new WebChromeClient() {
+                        public void onProgressChanged(WebView view, int progress) {
+                            progressBarWebView.setVisibility(View.VISIBLE);
+                            if (progress == 100) {
+                                progressBarWebView.setVisibility(View.GONE);
+                            }
                         }
-                    }
-                });
+                    });
 
-                webView.loadUrl("https://app.contexttocall.com/terms");
+                    webView.loadUrl("https://app.contexttocall.com/terms");
 
-                cancelTextView.setOnClickListener(view1 ->
-                        dialog.cancel());
-                dialog.show();
-            }
+                    cancelTextView.setOnClickListener(view1 ->
+                            dialog.cancel());
+                    dialog.show();
+                }
 
-            @Override
-            public void updateDrawState(@NonNull TextPaint ds) {
-                super.updateDrawState(ds);
-                ds.setColor(activity.getResources().getColor(R.color.bubbleColor));
-            }
+                @Override
+                public void updateDrawState(@NonNull TextPaint ds) {
+                    super.updateDrawState(ds);
+                    ds.setColor(activity.getResources().getColor(R.color.bubbleColor));
+                }
 
-        };
-        ss.setSpan(clickableSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            };
+            ss.setSpan(clickableSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
-        ss.setSpan(boldSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            StyleSpan boldSpan = new StyleSpan(Typeface.BOLD);
+            ss.setSpan(boldSpan, 15, 35, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-        termsTextView.setText(ss);
-        termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
-        termsTextView.setHighlightColor(Color.TRANSPARENT);
+            termsTextView.setText(ss);
+            termsTextView.setMovementMethod(LinkMovementMethod.getInstance());
+            termsTextView.setHighlightColor(Color.TRANSPARENT);
 
-        connectTxt.setOnClickListener(view -> {
+            connectTxt.setOnClickListener(view -> {
 
-            if (progressBar.getVisibility() == View.VISIBLE){
-                showError("Message", "Please wait");
-            }
-            else if (termsCheckBox.isChecked()) {
-                if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(firstNameEdittxt.getEditText())) {
-                    showError("Message", "Enter first name.");
-                } else if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(lastNameEdittxt.getEditText())) {
-                    showError("Message", "Enter last name.");
-                } else if (modes.channel.preferences.isContact(id) && TextUtils.isEmpty(numberEdittxt.getEditText())) {
-                    showError("Message", "Enter valid contact number.");
-                } else if (modes.channel.preferences.isEmail(id) && TextUtils.isEmpty(emailEditText.getEditText())) {
-                    showError("Message", "Please enter email address.");
-                } else if (modes.channel.preferences.isEmail(id) && !isValidString(emailEditText.getEditText())) {
-                    showError("Message", "Please enter valid email address.");
-                }  else if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id) && emailOTPEditText.getTag().toString().equals("false")) {
-                    showError("Message", "Please enter Email OTP.");
-                } else if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id) && mobileOTPEditText.getTag().toString().equals("false")) {
-                    showError("Message", "Please enter Contact number OTP.");
-                } else if(modes.channel.preferences.isSubjectRequired(id) && TextUtils.isEmpty(subjectEditText.getEditText()) ){
-                    showError("Message", "Please enter subject.");
-                }else if( modes.channel.preferences.isContextMandatory(id)  && !isChipSelected(chipGroup)){
-                    showError("Message", "Please select context.");
-                }else if( modes.channel.preferences.isUploadImageMandatory(id) && TextUtils.isEmpty(imageName)){
-                    showError("Message", "Please attach image.");
-                } else if (modes.channel.preferences.isMessage(id) && TextUtils.isEmpty(messageEditText.getEditText())) {
-                    showError("Message", "Please enter message here.");
-                }else {
-                    InitiateC2C initiateC2C = new InitiateC2C();
-                    if (activity != null) {
-                        C2C_Location locationTrack = new C2C_Location(activity);
-                        if (locationTrack.canGetLocation()) {
-                            double longitude = locationTrack.getLongitude();
-                            double latitude = locationTrack.getLatitude();
-                            if (latitude != 0.0 && longitude != 0.0) {
-                                initiateC2C.setLatLong(latitude + "," + longitude);
+                if (progressBar.getVisibility() == View.VISIBLE){
+                    showError("Message", "Please wait");
+                }
+                else if (termsCheckBox.isChecked()) {
+                    if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(firstNameEdittxt.getEditText())) {
+                        showError("Message", "Enter first name.");
+                    } else if (modes.channel.preferences.isName(id) && TextUtils.isEmpty(lastNameEdittxt.getEditText())) {
+                        showError("Message", "Enter last name.");
+                    } else if (modes.channel.preferences.isContact(id) && TextUtils.isEmpty(numberEdittxt.getEditText())) {
+                        showError("Message", "Enter valid contact number.");
+                    } else if (modes.channel.preferences.isEmail(id) && TextUtils.isEmpty(emailEditText.getEditText())) {
+                        showError("Message", "Please enter email address.");
+                    } else if (modes.channel.preferences.isEmail(id) && !isValidString(emailEditText.getEditText())) {
+                        showError("Message", "Please enter valid email address.");
+                    }  else if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id) && emailOTPEditText.getTag().toString().equals("false")) {
+                        showError("Message", "Please enter Email OTP.");
+                    } else if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id) && mobileOTPEditText.getTag().toString().equals("false")) {
+                        showError("Message", "Please enter Contact number OTP.");
+                    } else if(modes.channel.preferences.isSubjectRequired(id) && TextUtils.isEmpty(subjectEditText.getEditText()) ){
+                        showError("Message", "Please enter subject.");
+                    }else if( modes.channel.preferences.isContextMandatory(id)  && !isChipSelected(chipGroup)){
+                        showError("Message", "Please select context.");
+                    }else if( modes.channel.preferences.isUploadImageMandatory(id) && TextUtils.isEmpty(imageName)){
+                        showError("Message", "Please attach image.");
+                    } else if (modes.channel.preferences.isMessage(id) && TextUtils.isEmpty(messageEditText.getEditText())) {
+                        showError("Message", "Please enter message here.");
+                    }else {
+                        InitiateC2C initiateC2C = new InitiateC2C();
+                        if (activity != null) {
+                            C2C_Location locationTrack = new C2C_Location(activity);
+                            if (locationTrack.canGetLocation()) {
+                                double longitude = locationTrack.getLongitude();
+                                double latitude = locationTrack.getLatitude();
+                                if (latitude != 0.0 && longitude != 0.0) {
+                                    initiateC2C.setLatLong(latitude + "," + longitude);
+                                } else if (c2CAddress != null) {
+                                    setLatlong(initiateC2C);
+                                }
                             } else if (c2CAddress != null) {
                                 setLatlong(initiateC2C);
                             }
-                        } else if (c2CAddress != null) {
-                            setLatlong(initiateC2C);
                         }
-                    }
-                    initiateC2C.setChannelId(channelId);
-                    initiateC2C.setName(firstNameEdittxt.getEditText() + " " + lastNameEdittxt.getEditText());
-                    initiateC2C.setFname(firstNameEdittxt.getEditText());
-                    StringBuilder selectedChips = new StringBuilder("");
+                        initiateC2C.setChannelId(channelId);
+                        initiateC2C.setName(firstNameEdittxt.getEditText() + " " + lastNameEdittxt.getEditText());
+                        initiateC2C.setFname(firstNameEdittxt.getEditText());
+                        StringBuilder selectedChips = new StringBuilder("");
 
 
-                    // Iterate through all chips in the ChipGroup
-                    for (int i = 0; i < chipGroup.getChildCount(); i++) {
-                        Chip chip = (Chip) chipGroup.getChildAt(i);
-                        if (chip.isChecked()) {
-                            if (!TextUtils.isEmpty(selectedChips)){
-                                selectedChips.append("| ");
+                        // Iterate through all chips in the ChipGroup
+                        for (int i = 0; i < chipGroup.getChildCount(); i++) {
+                            Chip chip = (Chip) chipGroup.getChildAt(i);
+                            if (chip.isChecked()) {
+                                if (!TextUtils.isEmpty(selectedChips)){
+                                    selectedChips.append("| ");
+                                }
+                                selectedChips.append(chip.getText());
+
                             }
-                            selectedChips.append(chip.getText());
-
                         }
-                    }
-                    if (!TextUtils.isEmpty(subjectEditText.getEditText())){
-                        if (!TextUtils.isEmpty(selectedChips)){
-                            selectedChips.append("| ").append(subjectEditText.getEditText());
-                        }else {
-                            selectedChips.append(subjectEditText.getEditText());
-                        }
-                    }
-
-                    initiateC2C.setSubject(selectedChips.toString());
-
-                    initiateC2C.setImageFolder(imageFolder);
-                    initiateC2C.setImageName(imageName);
-                    initiateC2C.setLname(lastNameEdittxt.getEditText());
-                    initiateC2C.setNumotp(mobileOTPEditText.getEditText());
-                    initiateC2C.setMailotp(emailOTPEditText.getEditText());
-
-                    initiateC2C.setNumber(numberEdittxt.getEditText());
-                    for (Country country : modes.channel.countries) {
-                        if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
-                            initiateC2C.setCountrycode(country.code);
-                            break;
-                        }
-                    }
-
-                    if (id.equals(C2CConstants.CALL)) {
-                        if (!TextUtils.isEmpty(extensionEditTxt.getText().toString())){
-                            initiateC2C.setExtension(extensionEditTxt.getText().toString());
-                        }
-                        initiateC2C.setEmail(emailEditText.getEditText());
-                        initiateC2C.setMessage(messageEditText.getEditText());
-                        initiateCall(initiateC2C, dialog, progressBar);
-                    } else {
-
-                        if (id.equals(C2CConstants.SMS)) {
-                            initiateC2C.setEmail(emailEditText.getEditText());
-                            initiateC2C.setMessage(messageEditText.getEditText());
-                            sendMessage(initiateC2C, dialog, progressBar);
-                        } else if (id.equals(C2CConstants.EMAIL)) {
-                            initiateC2C.setMessage(messageEditText.getEditText());
-                            sendEmail(initiateC2C, dialog, progressBar);
-                        }
-                    }
-
-                }
-            } else {
-                showError("Message", "Please check and agree the terms & conditions.");
-            }
-        });
-
-        cancelTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        cancelImgView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-        previewImageTxt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Dialog dialog = new Dialog(activity);
-                dialog.setContentView(R.layout.preview_dialog);
-                Window window = dialog.getWindow();
-                window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT);
-                ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
-                ImageView deleteImgView = dialog.findViewById(R.id.deleteImgView);
-                ImageView selectedImage = dialog.findViewById(R.id.selectedImage);
-                deleteImgView.setColorFilter(activity.getResources().getColor(R.color.white));
-                cancelImgView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.cancel();
-                    }
-                });
-                deleteImgView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(!TextUtils.isEmpty(imageFolder) && !TextUtils.isEmpty(imageName)){
-                            deleteImage(channelId);
+                        if (!TextUtils.isEmpty(subjectEditText.getEditText())){
+                            if (!TextUtils.isEmpty(selectedChips)){
+                                selectedChips.append("| ").append(subjectEditText.getEditText());
+                            }else {
+                                selectedChips.append(subjectEditText.getEditText());
+                            }
                         }
 
-                        dialog.cancel();
-                    }
-                });
-                selectedImage.setImageURI(imageUri);
-                dialog.setCancelable(false);
-                dialog.show();
+                        initiateC2C.setSubject(selectedChips.toString());
 
-            }
-        });
-        icon_attach.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                activity.startActivityForResult(galleryIntent, REQUEST_CODE_PICK_IMAGES);
-            }
-        });
-        icon_camera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                try {
-                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    // Ensure that there's a camera activity to handle the intent
-                    ContentValues values = new ContentValues();
-                    values.put(MediaStore.Images.Media.TITLE, "New Picture");
-                    values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
-                    imageUri = activity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                        initiateC2C.setImageFolder(imageFolder);
+                        initiateC2C.setImageName(imageName);
+                        initiateC2C.setLname(lastNameEdittxt.getEditText());
+                        initiateC2C.setNumotp(mobileOTPEditText.getEditText());
+                        initiateC2C.setMailotp(emailOTPEditText.getEditText());
 
-                    // Pass the file URI to the intent
-                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-                    activity.startActivityForResult(takePictureIntent, REQUEST_CODE_CAPTURE_IMAGE);
-
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-
-
-
-        if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id)) {
-
-            mobileOTPEditText.addTextChangedListener(new TextWatcher() {
-
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    if (charSequence.length() == 4) {
-                        ValidateOTP validateOTP = new ValidateOTP();
-                        validateOTP.setChannelId(channelId);
-                        validateOTP.setNumber(numberEdittxt.getEditText());
-                        validateOTP.setOtp(mobileOTPEditText.getEditText());
+                        initiateC2C.setNumber(numberEdittxt.getEditText());
                         for (Country country : modes.channel.countries) {
                             if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
-                                validateOTP.setCountrycode(country.code);
+                                initiateC2C.setCountrycode(country.code);
                                 break;
                             }
                         }
 
-                        validateOTP(mobileOTPEditText, validateOTP);
-                    } else {
-                        mobileOTPEditText.setTag(false);
+                        if (id.equals(C2CConstants.CALL)) {
+                            if (!TextUtils.isEmpty(extensionEditTxt.getText().toString())){
+                                initiateC2C.setExtension(extensionEditTxt.getText().toString());
+                            }
+                            initiateC2C.setEmail(emailEditText.getEditText());
+                            initiateC2C.setMessage(messageEditText.getEditText());
+                            initiateCall(initiateC2C, dialog, progressBar);
+                        } else {
+
+                            if (id.equals(C2CConstants.SMS)) {
+                                initiateC2C.setEmail(emailEditText.getEditText());
+                                initiateC2C.setMessage(messageEditText.getEditText());
+                                sendMessage(initiateC2C, dialog, progressBar);
+                            } else if (id.equals(C2CConstants.EMAIL)) {
+                                initiateC2C.setMessage(messageEditText.getEditText());
+                                sendEmail(initiateC2C, dialog, progressBar);
+                            }
+                        }
+
                     }
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-
-                }
-            });
-        }
-        if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id)) {
-            emailOTPEditText.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    if (charSequence.length() == 4) {
-                        ValidateOTP validateOTP = new ValidateOTP();
-                        validateOTP.setChannelId(channelId);
-                        validateOTP.setEmail(emailEditText.getEditText());
-                        validateOTP.setOtp(emailOTPEditText.getEditText());
-
-                        validateEmailOTP(emailOTPEditText, validateOTP);
-                    } else {
-                        emailOTPEditText.setTag(false);
-                    }
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-
-                }
-            });
-
-        }
-        mobileOTPLayout.setVisibility(View.GONE);
-        emailOTPLayout.setVisibility(View.GONE);
-        nameLayout.setVisibility(modes.channel.preferences.isName(id) ? View.VISIBLE : View.GONE);
-        numberLayout.setVisibility(modes.channel.preferences.isContact(id) ? View.VISIBLE : View.GONE);
-        emailLayout.setVisibility(modes.channel.preferences.isEmail(id) ? View.VISIBLE : View.GONE);
-        if (id == C2CConstants.CALL){
-            messageLayout.setVisibility(modes.channel.preferences.isMessage(id) ? View.VISIBLE : View.GONE);
-        }
-        numberEdittxt.setInputType();
-        extensionEditTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
-        numberEdittxt.setButtonVisibility(modes.channel.preferences.isVerifycontact(id),"Verify", new ButtonCallBack() {
-
-            @Override
-            public void onCLick(TextView txtView) {
-                if (numberEdittxt.getEditText().isEmpty()) {
-                    showError("Message", "Enter valid contact number.");
                 } else {
-                    for (Country country : modes.channel.countries) {
-                        if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
-                            getSMSOTP(
-                                    channelId,
-                                    country.code,
-                                    numberEdittxt.getEditText(),
-                                    mobileOTPLayout, txtView
-                            );
-                            break;
+                    showError("Message", "Please check and agree the terms & conditions.");
+                }
+            });
+
+            cancelTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                }
+            });
+            cancelImgView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    dialog.dismiss();
+                }
+            });
+            previewImageTxt.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Dialog dialog = new Dialog(activity);
+                    dialog.setContentView(R.layout.preview_dialog);
+                    Window window = dialog.getWindow();
+                    window.setLayout(WindowManager.LayoutParams.MATCH_PARENT,
+                            WindowManager.LayoutParams.WRAP_CONTENT);
+                    ImageView cancelImgView = dialog.findViewById(R.id.cancelImgView);
+                    ImageView deleteImgView = dialog.findViewById(R.id.deleteImgView);
+                    ImageView selectedImage = dialog.findViewById(R.id.selectedImage);
+                    deleteImgView.setColorFilter(activity.getResources().getColor(R.color.white));
+                    cancelImgView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            dialog.cancel();
+                        }
+                    });
+                    deleteImgView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if(!TextUtils.isEmpty(imageFolder) && !TextUtils.isEmpty(imageName)){
+                                deleteImage(channelId);
+                            }
+
+                            dialog.cancel();
+                        }
+                    });
+                    selectedImage.setImageURI(imageUri);
+                    dialog.setCancelable(false);
+                    dialog.show();
+
+                }
+            });
+            icon_attach.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    activity.startActivityForResult(galleryIntent, REQUEST_CODE_PICK_IMAGES);
+                }
+            });
+            icon_camera.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        // Ensure that there's a camera activity to handle the intent
+                        ContentValues values = new ContentValues();
+                        values.put(MediaStore.Images.Media.TITLE, "New Picture");
+                        values.put(MediaStore.Images.Media.DESCRIPTION, "From your Camera");
+                        imageUri = activity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                        // Pass the file URI to the intent
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                        activity.startActivityForResult(takePictureIntent, REQUEST_CODE_CAPTURE_IMAGE);
+
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+
+
+            if (modes.channel.preferences.isContact(id) && modes.channel.preferences.isVerifycontact(id)) {
+
+                mobileOTPEditText.addTextChangedListener(new TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        if (charSequence.length() == 4) {
+                            ValidateOTP validateOTP = new ValidateOTP();
+                            validateOTP.setChannelId(channelId);
+                            validateOTP.setNumber(numberEdittxt.getEditText());
+                            validateOTP.setOtp(mobileOTPEditText.getEditText());
+                            for (Country country : modes.channel.countries) {
+                                if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
+                                    validateOTP.setCountrycode(country.code);
+                                    break;
+                                }
+                            }
+
+                            validateOTP(mobileOTPEditText, validateOTP);
+                        } else {
+                            mobileOTPEditText.setTag(false);
                         }
                     }
 
-                }
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+
+                    }
+                });
             }
-        });
-        emailEditText.setButtonVisibility(modes.channel.preferences.isVerifyemail(id),"Verify", new ButtonCallBack() {
-            @Override
-            public void onCLick(TextView txtView) {
-                if (TextUtils.isEmpty(emailEditText.getEditText())) {
-                    showError("Message", "Please enter email address.");
-                } else if (!isValidString(emailEditText.getEditText())) {
-                    showError("Message", "Please enter valid email address.");
-                } else {
-                    getEmailOTP(channelId, emailEditText.getEditText(), emailOTPLayout, txtView);
+            if (modes.channel.preferences.isEmail(id) && modes.channel.preferences.isVerifyemail(id)) {
+                emailOTPEditText.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                        if (charSequence.length() == 4) {
+                            ValidateOTP validateOTP = new ValidateOTP();
+                            validateOTP.setChannelId(channelId);
+                            validateOTP.setEmail(emailEditText.getEditText());
+                            validateOTP.setOtp(emailOTPEditText.getEditText());
+
+                            validateEmailOTP(emailOTPEditText, validateOTP);
+                        } else {
+                            emailOTPEditText.setTag(false);
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+
+                    }
+                });
+
+            }
+            mobileOTPLayout.setVisibility(View.GONE);
+            emailOTPLayout.setVisibility(View.GONE);
+            nameLayout.setVisibility(modes.channel.preferences.isName(id) ? View.VISIBLE : View.GONE);
+            numberLayout.setVisibility(modes.channel.preferences.isContact(id) ? View.VISIBLE : View.GONE);
+            emailLayout.setVisibility(modes.channel.preferences.isEmail(id) ? View.VISIBLE : View.GONE);
+            if (id == C2CConstants.CALL){
+                messageLayout.setVisibility(modes.channel.preferences.isMessage(id) ? View.VISIBLE : View.GONE);
+            }
+            numberEdittxt.setInputType();
+            extensionEditTxt.setInputType(InputType.TYPE_CLASS_NUMBER);
+            numberEdittxt.setButtonVisibility(modes.channel.preferences.isVerifycontact(id),"Verify", new ButtonCallBack() {
+
+                @Override
+                public void onCLick(TextView txtView) {
+                    if (numberEdittxt.getEditText().isEmpty()) {
+                        showError("Message", "Enter valid contact number.");
+                    } else {
+                        for (Country country : modes.channel.countries) {
+                            if ((country.code + " " + country.country).contentEquals(selectedCountry[0])) {
+                                getSMSOTP(
+                                        channelId,
+                                        country.code,
+                                        numberEdittxt.getEditText(),
+                                        mobileOTPLayout, txtView
+                                );
+                                break;
+                            }
+                        }
+
+                    }
+                }
+            });
+            emailEditText.setButtonVisibility(modes.channel.preferences.isVerifyemail(id),"Verify", new ButtonCallBack() {
+                @Override
+                public void onCLick(TextView txtView) {
+                    if (TextUtils.isEmpty(emailEditText.getEditText())) {
+                        showError("Message", "Please enter email address.");
+                    } else if (!isValidString(emailEditText.getEditText())) {
+                        showError("Message", "Please enter valid email address.");
+                    } else {
+                        getEmailOTP(channelId, emailEditText.getEditText(), emailOTPLayout, txtView);
+                    }
+                }
+
+
+            });
+            subjectLayout.setVisibility(modes.channel.preferences.isSubjectRequired(id) ? View.VISIBLE : View.GONE);
+            attachLayout.setVisibility(modes.channel.preferences.isUploadImage(id) ? View.VISIBLE : View.GONE);
+            chipGroup.setVisibility(modes.channel.preferences.isBubbleRequired(id) ? View.VISIBLE : View.GONE);
+            emailOTPEditText.setTag(false);
+            mobileOTPEditText.setTag(false);
+            if (modes.channel.preferences.isBubbleRequired(id)){
+                if (id == C2CConstants.CALL) {
+                    for (String item : modes.channel.contexts.callContext) {
+                        addChipToGroup(item,chipGroup);
+                    }
+                }
+                else if (id == C2CConstants.EMAIL) {
+                    for (String item : modes.channel.contexts.emailContext) {
+                        addChipToGroup(item,chipGroup);
+                    }
+                }
+                else if (id == C2CConstants.SMS){
+                    for (String item : modes.channel.contexts.smsContext) {
+                        addChipToGroup(item,chipGroup);
+                    }
+                }
+                if (modes.channel.preferences.isContextMultiSelect(id)){
+                    chipGroup.setSingleSelection(true);
+                }else {
+                    chipGroup.setSingleSelection(false);
                 }
             }
 
-
-        });
-        subjectLayout.setVisibility(modes.channel.preferences.isSubjectRequired(id) ? View.VISIBLE : View.GONE);
-        attachLayout.setVisibility(modes.channel.preferences.isUploadImage(id) ? View.VISIBLE : View.GONE);
-        chipGroup.setVisibility(modes.channel.preferences.isBubbleRequired(id) ? View.VISIBLE : View.GONE);
-        emailOTPEditText.setTag(false);
-        mobileOTPEditText.setTag(false);
-        if (modes.channel.preferences.isBubbleRequired(id)){
-            if (id == C2CConstants.CALL) {
-                for (String item : modes.channel.contexts.callContext) {
-                    addChipToGroup(item,chipGroup);
-                }
-            }
-            else if (id == C2CConstants.EMAIL) {
-                for (String item : modes.channel.contexts.emailContext) {
-                    addChipToGroup(item,chipGroup);
-                }
-            }
-            else if (id == C2CConstants.SMS){
-                for (String item : modes.channel.contexts.smsContext) {
-                    addChipToGroup(item,chipGroup);
-                }
-            }
-            if (modes.channel.preferences.isContextMultiSelect(id)){
-                chipGroup.setSingleSelection(true);
-            }else {
-                chipGroup.setSingleSelection(false);
-            }
-        }
-
-        dialog.setCancelable(false);
-        dialog.show();
+            dialog.setCancelable(false);
+            dialog.show();
 
     }
 
@@ -1384,6 +1376,19 @@ public class C2CEmbedActivity  extends AppCompatActivity {
         };
     }
 
+    public void handleActivityResult(int requestCode, int resultCode, Intent data)  {
+        if (requestCode == REQUEST_CODE_CAPTURE_IMAGE && resultCode == RESULT_OK) {
+            uploadImage(this.imageUri,activity, origin,channelID);
+        }
+
+        if (requestCode == REQUEST_CODE_PICK_IMAGES && resultCode == RESULT_OK) {
+                if (data.getData() != null) {
+                // Single image selected
+                this.imageUri = data.getData();
+                uploadImage(this.imageUri,activity, origin,channelID);
+            }
+        }
+    }
 
     private void uploadImage(Uri imageUri, Activity activity, String origin, String channelId) {
         isImageUploaded = false;

@@ -1,6 +1,5 @@
-package com.c2cb.androidsdk;
+package com.c2cb.androidsdk.view;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
@@ -8,8 +7,9 @@ import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 
-@SuppressLint("AppCompatCustomView")
-public class PoppinsBoldTextView extends TextView {
+import com.c2cb.androidsdk.R;
+
+public class PoppinsBoldTextView extends androidx.appcompat.widget.AppCompatTextView {
 
     public PoppinsBoldTextView(Context context) {
         super(context);

@@ -1,4 +1,4 @@
-package com.c2cb.androidsdk;
+package com.c2cb.androidsdk.network;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.OpenableColumns;
 import android.util.Log;
-
 
 import com.google.gson.Gson;
 
@@ -28,7 +27,7 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class HTTPRequestC2C extends AsyncTask<String, Void, String>{
+public class HTTPRequestC2C extends AsyncTask<String, Void, String> {
     public String requestURL = "";
     public HashMap<String, String> postDataParams;
     public HashMap<String, String> headers;

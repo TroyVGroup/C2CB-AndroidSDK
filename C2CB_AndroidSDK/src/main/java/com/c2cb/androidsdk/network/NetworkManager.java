@@ -1,4 +1,4 @@
-package com.c2cb.androidsdk;
+package com.c2cb.androidsdk.network;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,6 +12,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+
+import com.c2cb.androidsdk.C2CConstants;
 import com.c2cb.androidsdk.pojo.C2CAddress;
 import com.c2cb.androidsdk.pojo.CallPojo;
 import com.c2cb.androidsdk.pojo.ImageUploadResponse;
@@ -29,21 +31,24 @@ import java.util.Map;
 
 public class NetworkManager {
 
-
-    public static final String BASE_URL = "https://apis.contexttocall.com/c2c";
-
+//    public static final String BASE_URL = "https://apis.vgroupinc.com/test_c2c_p82";
+    public static final String BASE_URL = "https://dev-api-t10.vgroupinc.com/dev_c2c_p82";
+//    public static final String BASE_IMAGE_URL = "https://0017-103-127-185-218.ngrok-free.app";
+//public static final String BASE_URL = "https://apis.contexttocall.com/c2c"; // Prod
+    public static final String android_version = "1.0";
     public void getModes(final NetworkEventListener listener, String channelId, String c2cPackage, ImageView call_icon, ImageView msg_icon, ImageView email_icon) {
         String url = C2CConstants.CHANNEL_MODES + channelId;
         HashMap<String, String> headers = new HashMap<>();
         headers.put("request-package", c2cPackage);
         headers.put("Content-Type","application/json");
         headers.put("Accept", "application/json");
+        headers.put("android_version", android_version);
         HTTPRequestC2C requestHttp = new HTTPRequestC2C(url, Method.GET.toString(), Method.GET, headers,Modes.class, new HTTPCallback() {
             @Override
             public void processFinish(Object obj) {
                 Modes response = (Modes) obj;
 
-                if (response.status == 200 && !response.channel.status.equalsIgnoreCase("inactive")) {
+                if (response.status == 200 && !response.channel.status.equalsIgnoreCase("inactive") && TextUtils.isEmpty(response.getChannel().versionerror)) {
                     call_icon.setVisibility(response.channel.callstats.enable ? View.VISIBLE : View.GONE);
                     msg_icon.setVisibility(response.channel.smsstats.enable ? View.VISIBLE : View.GONE);
                     email_icon.setVisibility(response.channel.emailstats.enable ? View.VISIBLE : View.GONE);
@@ -153,7 +158,7 @@ public class NetworkManager {
         headers.put("request-package", c2cPackage);
         headers.put("Content-Type","application/json");
         headers.put("Accept", "application/json");
-        HTTPRequestC2C requestHttp = new HTTPRequestC2C(url, data, Method.POST, headers,SuccessC2C.class, new HTTPCallback() {
+        HTTPRequestC2C requestHttp = new HTTPRequestC2C(url, data, Method.POST, headers, SuccessC2C.class, new HTTPCallback() {
             @Override
             public void processFinish(Object obj) {
                 listener.OnSuccess((SuccessC2C) obj);
@@ -307,7 +312,7 @@ public class NetworkManager {
         });
         requestHttp.execute();
     }
-    public void uploadImageToServer(NetworkEventListener listener, Uri imageUri, Activity activity, String c2cPackage, String channelID, String imageName, String imageFolder) {
+    public void uploadImageToServer(NetworkEventListener listener, Uri imageUri, Activity activity, String c2cPackage, String channelID,String imageName,String imageFolder) {
         String url = C2CConstants.UPLOAD_IMAGES+ "?channelId=" + channelID + (TextUtils.isEmpty(imageFolder) ?"": "&imageFolder="+imageFolder+"&imageName="+imageName);
         HashMap<String, String> headers = new HashMap<>();
         headers.put("request-package", c2cPackage);

@@ -11,4 +11,5 @@ public class Channel{
     public Contexts contexts;
     public ArrayList<Country> countries;
     public String status;
+    public String versionerror;
 }

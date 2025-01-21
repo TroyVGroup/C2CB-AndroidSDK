@@ -35,7 +35,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/oneNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -52,7 +52,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/twoNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -62,7 +62,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/abcTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -81,7 +81,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/threeNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -90,7 +90,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/defTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -117,7 +117,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/fourNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -126,7 +126,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/ghiTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -145,7 +145,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/fiveNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -154,7 +154,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/jklTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -173,7 +173,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/sixNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -182,7 +182,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/mnoTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -209,7 +209,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/sevenNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -218,7 +218,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/pqrsTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -237,7 +237,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/eightNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -246,7 +246,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/tuvTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -265,7 +265,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/nineNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -274,7 +274,7 @@
                 android:textColor="#1346DD"
                 android:textSize="30dp" />
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/wxyzTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -301,7 +301,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/asteriskNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -318,7 +318,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/zeroNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -328,7 +328,7 @@
                 android:textSize="30dp" />
 
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/plusTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -347,7 +347,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1">
 
-            <com.c2cb.androidsdk.PoppinsNormalTextView
+            <TextView
                 android:id="@+id/hashNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
